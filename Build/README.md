@@ -102,7 +102,7 @@ because of `noexec` permission set on user's home directory by security reasons.
 
 ### MacOS Build with XCode
 
-Start Terminal, go to `MethaneKit` root directory and either start auxiliary build script
+Start Terminal, go to `MethaneAsteroids` root directory and either start auxiliary build script
 [Build/Unix/Build.sh](/Build/Unix/Build.sh) or build with CMake command line to generate XCode workspace:
 
 ```console
