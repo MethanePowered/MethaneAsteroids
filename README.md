@@ -3,24 +3,24 @@
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MethanePowered/MethaneAsteroids)
 [![Total lines](https://tokei.rs/b1/github/MethanePowered/MethaneAsteroids)](https://github.com/MethanePowered/MethaneAsteroids)
 
-Asteroids sample demonstrates multi-threaded rendering of large number of random-generated asteroid meshes 
-with [Methane Kit](https://github.com/MethanePowered/MethaneKit) library with graphics API and platform independent implementation,
-which is based on DirectX 12, Vulkan and Metal.
-Thousands of unique asteroid instances (1000-50000) are drawn with individual Draw-calls in parallel with a random combination of:
-- random-generated mesh (from array of up to 1000 unique meshes)
-- random generated perlin-noise array texture each with 3 projections (from array of up to 50 unique textures)
-- random combination of coloring (from 72 color combinations)
+Asteroids sample demonstrates multi-threaded rendering of large number of random-generated asteroids 
+with **[Methane Kit](https://github.com/MethanePowered/MethaneKit) library** using one of modern graphics APIs 
+(DirectX 12, Vulkan or Metal) and platform independent implementation.
+Thousands of unique asteroid instances (1000-50000) are drawn with individual draw-call parameters in parallel with a random combination of:
+- random-generated mesh (from array of up to 1000 unique meshes),
+- random generated perlin-noise array texture each with 3 projections (from array of up to 50 unique textures),
+- random combination of coloring (from 72 color combinations).
 
 Methane Asteroids sample was inspired by [Intel Asteroids D3D12](https://github.com/GameTechDev/asteroids_d3d12),
 but implemented from scratch in a cross-platform style using [Methane Kit](https://github.com/MethanePowered/MethaneKit).
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MethanePowered/MethaneAsteroids)
 
-| <pre><b>Platform      </b></pre> | <pre><b>Graphics API     </b></pre>    | <pre><b>Screenshot                                </b></pre> |
-|-----------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+| <pre><b>Platform      </b></pre>                                                                                                        | <pre><b>Graphics API     </b></pre>                                                                                                                                                                                                                                                                       | <pre><b>Screenshot                                </b></pre>   |
+|-----------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
 | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle"> Windows | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/DirectX12Small.png" width=24 valign="middle"> DirectX 12<br/><br/><img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan | ![Asteroids on Windows](Screenshots/AsteroidsWinDirectX12.jpg) |
-| <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/Ubuntu.png" width=24 valign="middle"> Linux    | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan        | ![Asteroids on Linux](Screenshots/AsteroidsLinVulkan.jpg)      |
-| <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/MacOS.png" width=24 valign="middle"> MacOS     | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal          | ![Asteroids on MacOS](Screenshots/AsteroidsMacMetal.jpg)       |
+| <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/Ubuntu.png" width=24 valign="middle"> Linux    | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan                                                                                                                                                              | ![Asteroids on Linux](Screenshots/AsteroidsLinVulkan.jpg)      |
+| <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/MacOS.png" width=24 valign="middle"> MacOS     | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal                                                                                                                                                                | ![Asteroids on MacOS](Screenshots/AsteroidsMacMetal.jpg)       |
 
 ## [Build Instructions](/Build/README.md)
 
