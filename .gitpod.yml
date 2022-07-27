@@ -1,0 +1,22 @@
+github:
+  prebuilds:
+    main: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: true
+    addComment: true
+    addBadge: false
+    addLabel: false
+
+image:
+  file: .gitpod.dockerfile
+
+ports:
+  - port: 6080
+    onOpen: open-preview
+
+vscode:
+  extensions:
+    - twxs.cmake
+    - ms-vscode.cmake-tools
