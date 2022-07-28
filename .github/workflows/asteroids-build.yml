@@ -1,0 +1,93 @@
+# Cross-platform and multi-configuration build of the Methane Asteroids sample
+
+name: "Asteroids Build"
+
+on:
+  push:
+    branches: [ master, develop ]
+    paths:
+    - '.github/**/*.yml'
+    - 'Apps/**'
+    - 'Modules/**'
+    - 'Externals/**'
+    - 'CMakeLists.txt'
+  pull_request:
+    branches: [ master ]
+    paths:
+    - '.github/**/*.yml'
+    - 'Apps/**'
+    - 'Modules/**'
+    - 'Externals/**'
+    - 'CMakeLists.txt'
+  schedule:
+    - cron: '20 23 * * 3'
+
+jobs:
+  analyze:
+    name: Build
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: windows-latest
+            name: "Win64_DX_Release"
+            config_preset: "VS2022-Win64-DX-Default"
+            build_preset: "VS2022-Win64-DX-Release"
+          - os: windows-latest
+            name: "Win64_VK_Release"
+            config_preset: "VS2022-Win64-VK-Default"
+            build_preset: "VS2022-Win64-VK-Release"
+          - os: windows-latest
+            name: "Win64_DX_Profile"
+            config_preset: "VS2022-Win64-DX-Profile"
+            build_preset: "VS2022-Win64-DX-Profile"
+          - os: windows-latest
+            name: "Win64_VK_Profile"
+            config_preset: "VS2022-Win64-VK-Profile"
+            build_preset: "VS2022-Win64-VK-Profile"
+          - os: ubuntu-latest
+            name: "Ubuntu_VK_Release"
+            config_preset: "Make-Lin-VK-Default"
+            build_preset: "Make-Lin-VK-Release"
+          - os: ubuntu-latest
+            name: "Ubuntu_VK_Profile"
+            config_preset: "Make-Lin-VK-Profile"
+            build_preset: "Make-Lin-VK-Profile"
+          - os: macos-latest
+            name: "MacOS_MTL_Release"
+            config_preset: "Xcode-Mac-MTL-Default"
+            build_preset: "Xcode-Mac-MTL-Release"
+          - os: macos-latest
+            name: "MacOS_MTL_Profile"
+            config_preset: "Xcode-Mac-MTL-Profile"
+            build_preset: "Xcode-Mac-MTL-Profile"
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      NAME: MethaneAsteroids_${{ matrix.name }}
+
+    steps:
+
+    - name: Install Linux prerequisites
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Initialize Externals Cache
+      id: cache-externals
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-externals
+      with:
+        path: Build/Output/ExternalsCache
+        key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
+
+    - name: CMake Configure Preset ${{ matrix.config_preset }}
+      run: cmake --preset ${{ matrix.config_preset }}
+
+    - name: CMake Build Preset ${{ matrix.build_preset }}
+      run: cmake --build --preset ${{ matrix.build_preset }} --parallel 4
