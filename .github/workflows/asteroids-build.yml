@@ -23,11 +23,11 @@ on:
     - cron: '20 23 * * 3'
 
 jobs:
-  analyze:
-    name: Build
+  build-asteroids:
+    name: Build ${{ matrix.name }}
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
@@ -48,7 +48,7 @@ jobs:
             build_preset: "VS2022-Win64-VK-Profile"
           - os: ubuntu-latest
             name: "Ubuntu_VK_Release"
-            config_preset: "Make-Lin-VK-Default"
+            config_preset: "Make-Lin-VK-Release"
             build_preset: "Make-Lin-VK-Release"
           - os: ubuntu-latest
             name: "Ubuntu_VK_Profile"
