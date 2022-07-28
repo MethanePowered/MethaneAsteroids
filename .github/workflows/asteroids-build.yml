@@ -87,7 +87,7 @@ jobs:
         key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
-      run: cmake --preset ${{ matrix.config_preset }}
+      run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --parallel 4
