@@ -23,7 +23,7 @@ Random generated asteroid model with mesh and texture ready for rendering
 
 #include "Asteroid.h"
 
-#include <Methane/Graphics/PerlinNoise.h>
+#include <PerlinNoise.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
