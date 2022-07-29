@@ -1,6 +1,7 @@
 # Methane Asteroids Sample <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Logo/MethaneLogoNameSmall.png" width=200 align="right" valign="middle">
 
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MethanePowered/MethaneAsteroids)
+[![Asteroids Build](https://github.com/MethanePowered/MethaneAsteroids/actions/workflows/asteroids-build.yml/badge.svg)](https://github.com/MethanePowered/MethaneAsteroids/actions/workflows/asteroids-build.yml)
 [![Total lines](https://tokei.rs/b1/github/MethanePowered/MethaneAsteroids)](https://github.com/MethanePowered/MethaneAsteroids)
 
 Asteroids sample demonstrates multi-threaded rendering of large number of random-generated asteroids 
