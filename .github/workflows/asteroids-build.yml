@@ -23,16 +23,14 @@ on:
     - cron: '20 23 * * 3'
 
 env:
-  product_name: 'MethaneAsteroids'
   product_ver_major: 0
   product_ver_minor: 6
   product_ver_patch: 5
   product_ver_build: ${{ github.run_id }}
-  product_ver_full:  ${{ product_ver_major }}.${{ product_ver_minor }}.${{ product_ver_patch }}.${{ product_ver_build }}
 
 jobs:
   build-asteroids:
-    name: Build ${{ matrix.name }} ${{ env.product_ver_full }}
+    name: Build ${{ matrix.name }}
 
     strategy:
       fail-fast: false
@@ -73,9 +71,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    env:
-      name: ${{ env.product_name }}_${{ matrix.name }}_${{ env.product_ver_full }}
-
     steps:
 
     - name: Install Linux prerequisites
@@ -95,25 +90,30 @@ jobs:
         key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
-      run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
+      run: cmake --preset ${{ matrix.config_preset }} \
+           -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF \
+           -DASTEROIDS_VERSION_MAJOR=${{ env.product_ver_major }} \
+           -DASTEROIDS_VERSION_MINOR=${{ env.product_ver_minor }} \
+           -DASTEROIDS_VERSION_PATCH=${{ env.product_ver_patch }} \
+           -DASTEROIDS_VERSION_BUILD=${{ env.product_ver_build }}
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --parallel 4
 
     - name: Tar Installation Files
       if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
-      run: tar -cvf ''Build/Output/${{ env.name }}.tar' 'Build/Output/${{ matrix.config_preset }}/Install'
+      run: tar -cvf 'Build/Output/MethaneAsteroids_${{ matrix.name }}.tar' 'Build/Output/${{ matrix.config_preset }}/Install'
 
     - name: Upload Unix Build Artifacts
       if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.name }}
-        path: Build/Output/${{ env.name }}.tar
+        name: MethaneAsteroids_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
+        path: Build/Output/MethaneAsteroids_${{ matrix.name }}.tar
 
     - name: Upload Windows Build Artifacts
       if: ${{ matrix.os == 'windows-2019' }}
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.name }}
+        name: MethaneAsteroids_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
         path: Build/Output/${{ matrix.config_preset }}/Install
