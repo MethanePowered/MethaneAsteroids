@@ -28,7 +28,7 @@ env:
   product_ver_minor: 6
   product_ver_patch: 5
   product_ver_build: ${{ github.run_id }}
-  product_ver_full:  ${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
+  product_ver_full:  ${{ product_ver_major }}.${{ product_ver_minor }}.${{ product_ver_patch }}.${{ product_ver_build }}
 
 jobs:
   build-asteroids:
