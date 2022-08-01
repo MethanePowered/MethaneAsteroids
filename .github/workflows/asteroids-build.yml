@@ -40,18 +40,34 @@ jobs:
             name: "Win64_DX_Release"
             config_preset: "VS2019-Win64-DX-Default"
             build_preset: "VS2019-Win64-DX-Release"
-          - os: windows-latest
+          - os: windows-2019
             name: "Win64_VK_Release"
             config_preset: "VS2019-Win64-VK-Default"
             build_preset: "VS2019-Win64-VK-Release"
-          - os: windows-latest
+          - os: windows-2019
             name: "Win64_DX_Profile"
             config_preset: "VS2019-Win64-DX-Profile"
             build_preset: "VS2019-Win64-DX-Profile"
-          - os: windows-latest
+          - os: windows-2019
             name: "Win64_VK_Profile"
             config_preset: "VS2019-Win64-VK-Profile"
             build_preset: "VS2019-Win64-VK-Profile"
+          - os: windows-2019
+            name: "Win32_DX_Release"
+            config_preset: "VS2019-Win32-DX-Default"
+            build_preset: "VS2019-Win32-DX-Release"
+          - os: windows-2019
+            name: "Win32_VK_Release"
+            config_preset: "VS2019-Win32-VK-Default"
+            build_preset: "VS2019-Win32-VK-Release"
+          - os: windows-2019
+            name: "Win32_DX_Profile"
+            config_preset: "VS2019-Win32-DX-Profile"
+            build_preset: "VS2019-Win32-DX-Profile"
+          - os: windows-2019
+            name: "Win32_VK_Profile"
+            config_preset: "VS2019-Win32-VK-Profile"
+            build_preset: "VS2019-Win32-VK-Profile"
           - os: ubuntu-latest
             name: "Ubuntu_VK_Release"
             config_preset: "Make-Lin-VK-Release"
@@ -93,7 +109,7 @@ jobs:
       run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF -DASTEROIDS_VERSION_MAJOR=${{ env.product_ver_major }} -DASTEROIDS_VERSION_MINOR=${{ env.product_ver_minor }} -DASTEROIDS_VERSION_PATCH=${{ env.product_ver_patch }} -DASTEROIDS_VERSION_BUILD=${{ env.product_ver_build }}
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
-      run: cmake --build --preset ${{ matrix.build_preset }} --parallel 4
+      run: cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4
 
     - name: Tar Installation Files
       if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
