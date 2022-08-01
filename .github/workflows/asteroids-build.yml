@@ -26,7 +26,7 @@ env:
   product_ver_major: 0
   product_ver_minor: 6
   product_ver_patch: 5
-  product_ver_build: ${{ github.run_id }}
+  product_ver_build: ${{ github.run_number }}
 
 jobs:
   build-asteroids:
@@ -90,12 +90,7 @@ jobs:
         key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
-      run: cmake --preset ${{ matrix.config_preset }} \
-           -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF \
-           -DASTEROIDS_VERSION_MAJOR=${{ env.product_ver_major }} \
-           -DASTEROIDS_VERSION_MINOR=${{ env.product_ver_minor }} \
-           -DASTEROIDS_VERSION_PATCH=${{ env.product_ver_patch }} \
-           -DASTEROIDS_VERSION_BUILD=${{ env.product_ver_build }}
+      run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF -DASTEROIDS_VERSION_MAJOR=${{ env.product_ver_major }} -DASTEROIDS_VERSION_MINOR=${{ env.product_ver_minor }} -DASTEROIDS_VERSION_PATCH=${{ env.product_ver_patch }} -DASTEROIDS_VERSION_BUILD=${{ env.product_ver_build }}
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --parallel 4
