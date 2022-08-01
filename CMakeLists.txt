@@ -3,10 +3,11 @@ cmake_minimum_required(VERSION 3.18.0)
 # Methane version, build & product info
 set(ASTEROIDS_VERSION_MAJOR 0 CACHE STRING "Asteroids major version")
 set(ASTEROIDS_VERSION_MINOR 6 CACHE STRING "Asteroids minor version")
+set(ASTEROIDS_VERSION_PATCH 5 CACHE STRING "Asteroids patch version")
 set(ASTEROIDS_VERSION_BUILD 0 CACHE STRING "Asteroids build version")
 
 project(METHANE_ASTEROIDS
-        VERSION ${ASTEROIDS_VERSION_MAJOR}.${ASTEROIDS_VERSION_MINOR}.${ASTEROIDS_VERSION_BUILD}
+        VERSION ${ASTEROIDS_VERSION_MAJOR}.${ASTEROIDS_VERSION_MINOR}.${ASTEROIDS_VERSION_PATCH}.${ASTEROIDS_VERSION_BUILD}
         DESCRIPTION "Asteroids sample demonstrating multi-threaded rendering of large number of heterogeneous asteroids with Methane Kit using DirectX 12, Vulkan and Metal"
         HOMEPAGE_URL "https://github.com/MethanePowered/MethaneAsteroids"
         LANGUAGES CXX C

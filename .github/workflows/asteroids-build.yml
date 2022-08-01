@@ -22,30 +22,38 @@ on:
   schedule:
     - cron: '20 23 * * 3'
 
+env:
+  product.name: 'MethaneAsteroids'
+  product.ver.major: 0
+  product.ver.minor: 6
+  product.ver.patch: 5
+  product.ver.build: ${{ github.run_id }}
+  product.ver.full:  ${{ product.ver.major }}.${{ product.ver.minor }}.${{ product.ver.patch }}.${{ product.ver.build }}
+
 jobs:
   build-asteroids:
-    name: Build ${{ matrix.name }}
+    name: Build ${{ matrix.name }} ${{ product.ver.full }}
 
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-2019
             name: "Win64_DX_Release"
-            config_preset: "VS2022-Win64-DX-Default"
-            build_preset: "VS2022-Win64-DX-Release"
+            config_preset: "VS2019-Win64-DX-Default"
+            build_preset: "VS2019-Win64-DX-Release"
           - os: windows-latest
             name: "Win64_VK_Release"
-            config_preset: "VS2022-Win64-VK-Default"
-            build_preset: "VS2022-Win64-VK-Release"
+            config_preset: "VS2019-Win64-VK-Default"
+            build_preset: "VS2019-Win64-VK-Release"
           - os: windows-latest
             name: "Win64_DX_Profile"
-            config_preset: "VS2022-Win64-DX-Profile"
-            build_preset: "VS2022-Win64-DX-Profile"
+            config_preset: "VS2019-Win64-DX-Profile"
+            build_preset: "VS2019-Win64-DX-Profile"
           - os: windows-latest
             name: "Win64_VK_Profile"
-            config_preset: "VS2022-Win64-VK-Profile"
-            build_preset: "VS2022-Win64-VK-Profile"
+            config_preset: "VS2019-Win64-VK-Profile"
+            build_preset: "VS2019-Win64-VK-Profile"
           - os: ubuntu-latest
             name: "Ubuntu_VK_Release"
             config_preset: "Make-Lin-VK-Release"
@@ -66,7 +74,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      NAME: MethaneAsteroids_${{ matrix.name }}
+      name: ${{ product.name }}_${{ matrix.name }}_${{ product.ver.full }}
 
     steps:
 
@@ -91,3 +99,21 @@ jobs:
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --parallel 4
+
+    - name: Tar Installation Files
+      if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+      run: tar -cvf ''Build/Output/${{ env.name }}.tar' 'Build/Output/${{ matrix.config_preset }}/Install'
+
+    - name: Upload Unix Build Artifacts
+      if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.name }}
+        path: Build/Output/${{ env.name }}.tar
+
+    - name: Upload Windows Build Artifacts
+      if: ${{ matrix.os == 'windows-2019' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.name }}
+        path: Build/Output/${{ matrix.config_preset }}/Install
