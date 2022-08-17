@@ -48,50 +48,111 @@ and planet using generated [Methane::Graphics::SphereMesh](https://github.com/Me
 with spherical texture coordinates. It also uses interactive [Arc-Ball camera](https://github.com/MethanePowered/MethaneKit/tree/master/Modules/Graphics/Camera/Include/Methane/Graphics/ArcBallCamera.h)
 rotated with mouse `LMB` and light rotated with `RMB` with keyboard shortcuts also available (see in help by `F1` key).
 
-## Application Controller 
+## Rendering Optimizations
 
-Keyboard actions are enabled with [AsteroidsAppController](/App/AsteroidsAppController.h) 
-derived from [Methane::Platform::Keyboard::ActionControllerBase](https://github.com/MethanePowered/MethaneKit/tree/master/Modules/Platform/Input/Include/Methane/Platform/KeyboardActionControllerBase.hpp):
-
-| Asteroids App Action         | Keyboard Shortcut   |
-|------------------------------|---------------------|
-| Switch Parallel Rendering    | `P`                 |
-| Switch Mesh LODs Coloring    | `L`                 |
-| Increase Mesh LOD Complexity | `'`                 |
-| Decrease Mesh LOD Complexity | `;`                 |
-| Increase Scene Complexity    | `]`                 |
-| Decrease Scene Complexity    | `[`                 |
-| Set Scene Complexity 0 .. 9  | `0..9`              |
-
-## Optimizations
-
-Sample includes the following optimizations and features:
 - Asteroid meshes use **dynamically selected LODs** depending on estimated screen size.
-This allows to greatly reduce GPU overhead. Use `L` key to enable LODs coloring and `'` / `;` keys to increase / reduce overall mesh level of details.
+  This allows to greatly reduce GPU overhead. Use `L` key to enable LODs coloring and `'` / `;` keys to increase / reduce overall mesh level of details.
 - **Parallel rendering** of asteroids array with individual draw-calls allows to be less CPU bound.
-Multi-threading can be switched off for comparing with single-threaded rendering by pressing `P` key.
-- **Parallel updating** of asteroid transformation matrices in [AsteroidsArray::Update](/Modules/Simulation/AsteroidsArray.cpp#L352) and 
-encoding asteroid meshes rendering in [MeshBuffers::DrawParallel](https://github.com/MethanePowered/MethaneKit/tree/master/Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp#L160)
-are implemented using [Taskflow](https://github.com/taskflow/taskflow/) library which enables effective usage of the thread-pool via `parallel_for` primitive.
+  Multi-threading can be switched off for comparing with single-threaded rendering by pressing `P` key.
+- **Parallel updating** of asteroid transformation matrices in [AsteroidsArray::Update](/Modules/Simulation/AsteroidsArray.cpp#L352) and
+  encoding asteroid meshes rendering in [MeshBuffers::DrawParallel](https://github.com/MethanePowered/MethaneKit/tree/master/Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp#L160)
+  are implemented using [Taskflow](https://github.com/taskflow/taskflow/) library which enables effective usage of the thread-pool via `parallel_for` primitive.
 - All asteroid textures are bound to program uniform all at once as an **array of textures** to minimize number of program binding calls between draws.
-Particular texture is selected on each draw call using index parameter in constants buffer.
-Note that each asteroid texture is a texture 2d array itself with 3 mip-mapped textures used for triplane projection.
+  Particular texture is selected on each draw call using index parameter in constants buffer.
+  Note that each asteroid texture is a texture 2d array itself with 3 mip-mapped textures used for triplane projection.
 - **Inverted depth buffer** (with values from 1 in foreground to 0 in background and greater-or-equal compare function)
-is used to minimize frame buffer overdrawing by rendering in order from foreground to background: asteroids array with planet
-are drawn first and sky-box afterwards.
+  is used to minimize frame buffer overdrawing by rendering in order from foreground to background: asteroids array with planet
+  are drawn first and sky-box afterwards.
+
+
+## Controls
+
+### Keyboard actions
+
+| Keyboard Action                     | Shortcut             | Controller                                                                                                                                                                | 
+|-------------------------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **APPLICATION SETTINGS**            |                      |                                                                                                                                                                           |
+| Show controls help                  | `F1`                 | [Methane::Platform::AppController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Platform/App/Include/Methane/Platform/AppController.h)                |
+| Show command-line help              | `F2`                 | [Methane::Platform::AppController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Platform/App/Include/Methane/Platform/AppController.h)                |
+| Show parameters                     | `F3`                 | [Methane::Platform::AppController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Platform/App/Include/Methane/Platform/AppController.h)                |
+| Switch heads-up-display mode        | `F4`                 | [Methane::UserInterface::AppController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/UserInterface/App/Include/Methane/UserInterface/AppController.h) |
+| Switch full-screen                  | `LCtrl` + `F`        | [Methane::Platform::AppController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Platform/App/Include/Methane/Platform/AppController.h)                |
+| Close application                   | `LCtrl`/`LCmd` + `Q` | [Methane::Platform::AppController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Platform/App/Include/Methane/Platform/AppController.h)                |
+| Switch animations on/off            | `LCtrl` + `P`        | [Methane::Graphics::AppController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppController.h)                |
+| **GRAPHICS CONTEXT SETTINGS**       |                      |                                                                                                                                                                           |
+| Switch vertical synchronization     | `LCtrl` + `V`        | [Methane::Graphics::AppContextController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppContextController.h)  |
+| Switch device used for rendering    | `LCtrl` + `X`        | [Methane::Graphics::AppContextController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppContextController.h)  |
+| Add frame buffer to swap-chain      | `LCtrl` + `+`        | [Methane::Graphics::AppContextController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppContextController.h)  |
+| Remove frame buffer from swap-chain | `LCtrl` + `-`        | [Methane::Graphics::AppContextController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppContextController.h)  |
+| **VIEW CAMERA**                     |                      |                                                                                                                                                                           |
+| Move camera left                    | `A`                  | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Move camera right                   | `D`                  | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Move camera forward                 | `W`                  | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Move camera backward                | `S`                  | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Move camera up                      | `Page Up`            | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Move camera down                    | `Page Down`          | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Yaw camera left                     | `Left`               | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Yaw camera right                    | `Right`              | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Pitch camera up                     | `Up`                 | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Pitch camera down                   | `Down`               | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Roll camera left                    | `<`                  | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Roll camera right                   | `>`                  | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Zoom camera in                      | `+`                  | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Zoom camera out                     | `-`                  | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Change camera pivot                 | `LAlt` + `P`         | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| Reset camera orientation            | `LAlt` + `R`         | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| **LIGHT SOURCE**                    |                      |                                                                                                                                                                           |
+| Reset light orientation             | `LCtrl` + `L`        | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h)    |
+| **ASTEROIDS SETTINGS**              |                      |                                                                                                                                                                           |
+| Switch Parallel Rendering           | `P`                  | [Methane::Samples::AsteroidsAppController](/App/AsteroidsAppController.h)                                                                                                 |
+| Switch Mesh LODs Coloring           | `L`                  | [Methane::Samples::AsteroidsAppController](/App/AsteroidsAppController.h)                                                                                                 |
+| Increase Mesh LOD Complexity        | `'`                  | [Methane::Samples::AsteroidsAppController](/App/AsteroidsAppController.h)                                                                                                 |
+| Decrease Mesh LOD Complexity        | `;`                  | [Methane::Samples::AsteroidsAppController](/App/AsteroidsAppController.h)                                                                                                 |
+| Increase Scene Complexity           | `]`                  | [Methane::Samples::AsteroidsAppController](/App/AsteroidsAppController.h)                                                                                                 |
+| Decrease Scene Complexity           | `[`                  | [Methane::Samples::AsteroidsAppController](/App/AsteroidsAppController.h)                                                                                                 |
+| Set Scene Complexity 0 .. 9         | `0..9`               | [Methane::Samples::AsteroidsAppController](/App/AsteroidsAppController.h)                                                                                                 |
+
+### Mouse actions
+
+| Mouse action     | Mouse Button      | Controller                                                                                                                                                             |
+|------------------|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **VIEW CAMERA**  |                   |                                                                                                                                                                        |
+| Rotate camera    | Left Button       | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h) |
+| Zoom camera      | Ver. Scroll Wheel | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h) |
+| Move camera      | Middle Button     | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h) |
+| **LIGHT SOURCE** |                   |                                                                                                                                                                        |
+| Rotate Light     | Right Button      | [Methane::Graphics::AppCameraController](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Include/Methane/Graphics/AppCameraController.h) |
+
+### Command line
+
+| Argument                  | Value (Default)     | Description                                                   | Application Class                                                                                                                                       | 
+|---------------------------|---------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **APPLICATION SETTINGS**  |                     |                                                               |                                                                                                                                                         |
+| `-h`, `--help`            | -                   | Print help message and exit                                   | [CLI::App](https://github.com/MethanePowered/CLI11/blob/main/include/CLI/App.hpp)                                                                       |
+| `-w`, `--wnd-size`        | `W H` (`0.8 0.8`)   | Window size in pixels or as ratio of desktop size             | [Methane::Platform::AppBase](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Platform/App/Sources/Methane/Platform/AppBase.cpp)        |
+| `-f`, `--full-screen`     | `0` / `1` (`0`)     | Full-screen mode                                              | [Methane::Platform::AppBase](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Platform/App/Sources/Methane/Platform/AppBase.cpp)        |
+| `-a`, `--animations`      | `0` / `1` (`1`)     | Enable animations                                             | [Methane::Graphics::AppBase](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Sources/Methane/Graphics/AppBase.cpp)        |
+| `-d`, `--device`          | `-1` / `0..N` (`0`) | Render at adapter index, use -1 for software adapter          | [Methane::Graphics::AppBase](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Sources/Methane/Graphics/AppBase.cpp)        |
+| `-v`, `--vsync`           | `0` / `1`           | Vertical synchronization                                      | [Methane::Graphics::AppBase](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Sources/Methane/Graphics/AppBase.cpp)        |
+| `-b`, `--frame-buffers`   | `0..N` (`3`)        | Frame buffers count in swap-chain                             | [Methane::Graphics::AppBase](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/App/Sources/Methane/Graphics/AppBase.cpp)        |
+| `-i`, `--hud`             | `0..3`              | HUD display mode (0 - hidden, 1 - in window title, 2 - in UI) | [Methane::UserInterface::App](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/UserInterface/App/Include/Methane/UserInterface/App.hpp) |
+| **ASTEROIDS SETTINGS**    |                     |                                                               |                                                                                                                                                         |
+| `-c`, `--complexity`      | `0..9`              | Asteroids simulation complexity                               | [Methane::Samples::AsteroidsApp](/App/AsteroidsApp.h)                                                                                                   |
+| `-s`, `--subdiv-count`    | `1..N`              | Mesh subdivisions count                                       | [Methane::Samples::AsteroidsApp](/App/AsteroidsApp.h)                                                                                                   |
+| `-t`, `--texture-array`   | `0` / `1` (`0`)     | Texture array enabled                                         | [Methane::Samples::AsteroidsApp](/App/AsteroidsApp.h)                                                                                                   |
+| `-r`, `--parallel-render` | `0` / `1` (`1`)     | Parallel rendering enabled                                    | [Methane::Samples::AsteroidsApp](/App/AsteroidsApp.h)                                                                                                   |
 
 ## Instrumentation and Profiling
 
-Integrated instrumentation of the Methane Kit library and Asteroids sample enables profiling with the following tools:
+[Integrated instrumentation of the Methane Kit](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Common/Instrumentation/README.md) 
+library and Asteroids sample enables profiling with the following tools:
 - [Tracy Profiler](https://github.com/wolfpld/tracy)
 - [Intel GPA Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer)
 - [Intel VTune Profiler](https://software.intel.com/content/www/us/en/develop/tools/vtune-profiler.html)
 
-![Asteroids Trace in Tracy](Screenshots/AsteroidsWinTracyProfiling.jpg)
-<p align="center"><i>Trace of Asteroids multi-threaded execution on CPU viewed in <a href="https://github.com/wolfpld/tracy">Tracy Profiler</a></i></p>
-
-![Asteroids Trace in GPA Trace Analyzer](Screenshots/AsteroidsWinGPATraceAnalyzer.jpg)
-<p align="center"><i>Trace of Asteroids multi-threaded execution on CPU viewed in <a href="https://software.intel.com/en-us/gpa/graphics-trace-analyzer">Intel GPA Trace Analyzer</a></i></p>
+| [Tracy Frame Profiler](https://github.com/wolfpld/tracy)                | [Intel Graphics Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer) |
+|-------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| ![Asteroids Trace in Tracy](Screenshots/AsteroidsWinTracyProfiling.jpg) | ![Asteroids Trace in GPA Trace Analyzer](Screenshots/AsteroidsWinGPATraceAnalyzer.jpg)        |
 
 ## [External Dependencies](/Externals/README.md)
 
