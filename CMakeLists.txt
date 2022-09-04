@@ -37,6 +37,7 @@ set(RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
 
 add_subdirectory(Externals)
 
+include(MethaneGlobalOptions)
 include(MethaneModules)
 
 get_native_graphics_apis()
