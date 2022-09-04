@@ -178,7 +178,7 @@ Please open generated Xcode workspace, select application schema and run it on i
 
 ### CMake Options
 
-Build options listed in table below can be used in cmake generator command line:
+[Methane Kit CMake options](https://github.com/MethanePowered/MethaneKit/tree/master/Build#cmake-options) can be used in cmake generator command line:
 
 ```console
 cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
