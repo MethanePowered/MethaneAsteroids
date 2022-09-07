@@ -24,8 +24,8 @@ on:
 
 env:
   product_ver_major: 0
-  product_ver_minor: 6
-  product_ver_patch: 5
+  product_ver_minor: 7
+  product_ver_patch: 0
   product_ver_build: ${{ github.run_number }}
 
 jobs:
@@ -84,6 +84,14 @@ jobs:
             name: "MacOS_MTL_Profile"
             config_preset: "Xcode-Mac-MTL-Profile"
             build_preset: "Xcode-Mac-MTL-Profile"
+          - os: macos-latest
+            name: "iOS_Sim_MTL_Release"
+            config_preset: "Xcode-iOS-Sim-MTL-Default"
+            build_preset: "Xcode-iOS-Sim-MTL-Release"
+          - os: macos-latest
+            name: "tvOS_Sim_MTL_Release"
+            config_preset: "Xcode-tvOS-Sim-MTL-Default"
+            build_preset: "Xcode-tvOS-Sim-MTL-Release"
 
     runs-on: ${{ matrix.os }}
 

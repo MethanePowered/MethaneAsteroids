@@ -1,16 +1,20 @@
 #!/bin/bash
 # Run Build.sh with optional arguments:
-#   --debug               - Debug build instead of Release build by default
-#   --vulkan VULKAN_SDK   - use Vulkan graphics API via Vulkan SDK path (~/VulkanSDK/1.2.182.0/macOS) instead of Metal on MacOS by default
-#   --graphviz            - enable GraphViz cmake module diagrams generation in Dot and Png formats
+#   --apple-platform PLATFORM - Apple platform name (MacOS - by default, OS64 - iOS, SIMULATORARM64 - iOS Sim, TVOS, SIMULATOR_TVOS, ...)
+#   --apple-dev-team TEAM_ID  - Apple development team id used for code signing (required for iOS platforms)
+#   --apple-deploy-target X.Y - minimum version of Apple OS deployment target (15.0 by default)
+#   --debug                   - Debug build instead of Release build by default
+#   --vulkan VULKAN_SDK       - use Vulkan graphics API via Vulkan SDK path (~/VulkanSDK/1.2.182.0/macOS) instead of Metal on MacOS by default
+#   --graphviz                - enable GraphViz cmake module diagrams generation in Dot and Png formats
 
 BUILD_VERSION_MAJOR=0
-BUILD_VERSION_MINOR=6
+BUILD_VERSION_MINOR=7
 BUILD_VERSION=$BUILD_VERSION_MAJOR.$BUILD_VERSION_MINOR
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 SOURCE_DIR=$SCRIPT_DIR/../..
 OUTPUT_DIR=$SCRIPT_DIR/../Output
+APPLE_DEPLOYMENT_TARGET="15.0"
 
 # Parse command line arguments
 while [ $# -ne 0 ]
@@ -28,6 +32,22 @@ do
         --graphviz)
             IS_GRAPHVIZ_BUILD=true
             ;;
+        --apple-platform)
+            APPLE_PLATFORM="$2"
+            shift
+            ;;
+        ---apple-platform)
+            APPLE_PLATFORM="$2"
+            shift
+            ;;
+        --apple-dev-team)
+            APPLE_DEVELOPMENT_TEAM="$2"
+            shift
+            ;;
+        --apple-deploy-target)
+            APPLE_DEPLOYMENT_TARGET="$2"
+            shift
+            ;;
         *)
             echo "Unknown argument: $arg" && exit 1
             ;;
@@ -36,8 +56,9 @@ do
 done
 
 # Choose CMake generator depending on operating system
-UNAME_OUT="$(uname -s)"
-case "${UNAME_OUT}" in
+ARCH_NAME="$(uname -m)"
+OS_NAME="$(uname -s)"
+case "${OS_NAME}" in
     Linux*)
         CMAKE_GENERATOR=Unix\ Makefiles
         PLATFORM_NAME=Linux
@@ -45,6 +66,23 @@ case "${UNAME_OUT}" in
     Darwin*)
         CMAKE_GENERATOR=Xcode
         PLATFORM_NAME=MacOS
+        if [ "$APPLE_PLATFORM" != "" ]; then
+            # Disable tests cause unbundled console executables can not be built with iOS toolchain
+            TESTS_BUILD_ENABLED="OFF"
+            CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$SOURCE_DIR/Externals/iOS-Toolchain.cmake \
+                         -DPLATFORM=$APPLE_PLATFORM \
+                         -DDEPLOYMENT_TARGET=$APPLE_DEPLOYMENT_TARGET \
+                         -DENABLE_ARC:BOOL=ON \
+                         -DENABLE_VISIBILITY:BOOL=ON \
+                         -DENABLE_BITCODE:BOOL=OFF \
+                         -DENABLE_STRICT_TRY_COMPILE:BOOL=OFF"
+            if [ "$APPLE_DEVELOPMENT_TEAM" != "" ]; then
+                CMAKE_FLAGS="$CMAKE_FLAGS \
+                         -DAPPLE_DEVELOPMENT_TEAM=${APPLE_DEVELOPMENT_TEAM}"
+            fi
+        else
+            APPLE_PLATFORM=MacOS_$ARCH_NAME
+        fi
         ;;
     *)
     echo "Unsupported operating system!" 1>&2 && exit 1
@@ -70,10 +108,23 @@ else
     GFX_API=MT
 fi
 
-CONFIG_DIR=$OUTPUT_DIR/$CMAKE_GENERATOR/$GFX_API-$BUILD_TYPE
+CONFIG_DIR=$OUTPUT_DIR/$CMAKE_GENERATOR
+if [ "$APPLE_PLATFORM" != "" ]; then
+    CONFIG_DIR=$CONFIG_DIR/$APPLE_PLATFORM
+fi
+
+CONFIG_DIR=$CONFIG_DIR/$GFX_API-$BUILD_TYPE
 INSTALL_DIR=$CONFIG_DIR/Install
 
-CMAKE_FLAGS=" \
+if [[ "$CMAKE_GENERATOR" == "Xcode" && "$APPLE_PLATFORM" =~ ^MacOS.*$ ]]; then
+    # Build architectures have to be set explicitly via generator command line starting with XCode and Clang v12
+    CLANG_VERSION="$(clang --version | grep -o -E 'version [0-9]+\.' | grep -o -E '[0-9]+')"
+    if [ $CLANG_VERSION -ge 12 ]; then
+        CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_ARCHITECTURES=$ARCH_NAME"
+    fi
+fi
+
+CMAKE_FLAGS="$CMAKE_FLAGS \
     -DASTEROIDS_VERSION_MAJOR=$BUILD_VERSION_MAJOR \
     -DASTEROIDS_VERSION_MINOR=$BUILD_VERSION_MINOR \
     -DMETHANE_GFX_VULKAN_ENABLED:BOOL=$VULKAN_BUILD_FLAG \
@@ -89,14 +140,6 @@ CMAKE_FLAGS=" \
     -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=OFF \
     -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF \
     -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF"
-
-if [ "$CMAKE_GENERATOR" == "Xcode" ]; then
-    # Build architectures have to be set explicitly via generator command line starting with XCode and Clang v12
-    CLANG_VERSION="$(clang --version | grep -o -E 'version [0-9]+\.' | grep -o -E '[0-9]+')"
-    if [ $CLANG_VERSION -ge 12 ]; then
-        CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
-    fi
-fi
 
 if [ "$IS_GRAPHVIZ_BUILD" == true ]; then
     GRAPHVIZ_DIR=$CONFIG_DIR/GraphViz
