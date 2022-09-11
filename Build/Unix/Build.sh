@@ -36,10 +36,6 @@ do
             APPLE_PLATFORM="$2"
             shift
             ;;
-        ---apple-platform)
-            APPLE_PLATFORM="$2"
-            shift
-            ;;
         --apple-dev-team)
             APPLE_DEVELOPMENT_TEAM="$2"
             shift
@@ -79,6 +75,7 @@ case "${OS_NAME}" in
             if [ "$APPLE_DEVELOPMENT_TEAM" != "" ]; then
                 CMAKE_FLAGS="$CMAKE_FLAGS \
                          -DAPPLE_DEVELOPMENT_TEAM=${APPLE_DEVELOPMENT_TEAM}"
+                CMAKE_BUID_OPTIONS="-- -allowProvisioningUpdates"
             fi
         else
             APPLE_PLATFORM=MacOS_$ARCH_NAME
@@ -125,8 +122,8 @@ if [[ "$CMAKE_GENERATOR" == "Xcode" && "$APPLE_PLATFORM" =~ ^MacOS.*$ ]]; then
 fi
 
 CMAKE_FLAGS="$CMAKE_FLAGS \
-    -DASTEROIDS_VERSION_MAJOR=$BUILD_VERSION_MAJOR \
-    -DASTEROIDS_VERSION_MINOR=$BUILD_VERSION_MINOR \
+    -DMETHANE_VERSION_MAJOR=$BUILD_VERSION_MAJOR \
+    -DMETHANE_VERSION_MINOR=$BUILD_VERSION_MINOR \
     -DMETHANE_GFX_VULKAN_ENABLED:BOOL=$VULKAN_BUILD_FLAG \
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON \
     -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=ON \
@@ -195,7 +192,7 @@ fi
 
 echo ----------
 echo Build with $CMAKE_GENERATOR...
-if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install --parallel 8; then
+if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install --parallel 8 $CMAKE_BUID_OPTIONS; then
     echo "Methane Asteroids build failed."
     exit 1
 fi

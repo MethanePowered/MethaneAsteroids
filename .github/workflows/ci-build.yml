@@ -1,6 +1,6 @@
-# Cross-platform and multi-configuration build of the Methane Asteroids sample
+# Cross-platform and multi-configuration build of Methane Asteroids
 
-name: "Asteroids Build"
+name: 'CI Build'
 
 on:
   push:
@@ -10,7 +10,9 @@ on:
     - 'Apps/**'
     - 'Modules/**'
     - 'Externals/**'
+    - 'CMake/**'
     - 'CMakeLists.txt'
+    - 'CMakePresets.json'
   pull_request:
     branches: [ main ]
     paths:
@@ -18,7 +20,9 @@ on:
     - 'Apps/**'
     - 'Modules/**'
     - 'Externals/**'
+    - 'CMake/**'
     - 'CMakeLists.txt'
+    - 'CMakePresets.json'
   schedule:
     - cron: '20 23 * * 3'
 
@@ -99,7 +103,7 @@ jobs:
 
     - name: Install Linux prerequisites
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev p7zip
 
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -114,25 +118,18 @@ jobs:
         key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
-      run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF -DASTEROIDS_VERSION_MAJOR=${{ env.product_ver_major }} -DASTEROIDS_VERSION_MINOR=${{ env.product_ver_minor }} -DASTEROIDS_VERSION_PATCH=${{ env.product_ver_patch }} -DASTEROIDS_VERSION_BUILD=${{ env.product_ver_build }}
+      run: cmake --preset ${{ matrix.config_preset }} -DASTEROIDS_VERSION_MAJOR=${{ env.product_ver_major }} -DASTEROIDS_VERSION_MINOR=${{ env.product_ver_minor }} -DASTEROIDS_VERSION_PATCH=${{ env.product_ver_patch }} -DASTEROIDS_VERSION_BUILD=${{ env.product_ver_build }}
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4
 
-    - name: Tar Installation Files
-      if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
-      run: tar -cvf 'Build/Output/MethaneAsteroids_${{ matrix.name }}.tar' 'Build/Output/${{ matrix.config_preset }}/Install'
+    - name: Archive Build Artifacts
+      shell: bash
+      working-directory: Build/Output/${{ matrix.config_preset }}/Install/Apps
+      run: 7z a -t7z -mx=9 MethaneAsteroids_${{ matrix.name }}.7z *
 
-    - name: Upload Unix Build Artifacts
-      if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+    - name: Upload Archived Build Artifacts
       uses: actions/upload-artifact@v3
       with:
         name: MethaneAsteroids_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: Build/Output/MethaneAsteroids_${{ matrix.name }}.tar
-
-    - name: Upload Windows Build Artifacts
-      if: ${{ matrix.os == 'windows-2019' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: MethaneAsteroids_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: Build/Output/${{ matrix.config_preset }}/Install
+        path: Build/Output/${{ matrix.config_preset }}/Install/MethaneAsteroids_${{ matrix.name }}.7z
