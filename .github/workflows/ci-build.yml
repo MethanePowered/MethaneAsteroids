@@ -132,4 +132,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: MethaneAsteroids_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: Build/Output/${{ matrix.config_preset }}/Install/MethaneAsteroids_${{ matrix.name }}.7z
+        path: Build/Output/${{ matrix.config_preset }}/Install/Apps/MethaneAsteroids_${{ matrix.name }}.7z
