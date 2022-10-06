@@ -160,12 +160,14 @@ jobs:
         key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
+      shell: bash
       run: |
         set -o pipefail
         mkdir -p "Build/Output/${{ matrix.config_preset }}/Install"
         cmake --preset ${{ matrix.config_preset }} -DASTEROIDS_VERSION_MAJOR=${{ env.product_ver_major }} -DASTEROIDS_VERSION_MINOR=${{ env.product_ver_minor }} -DASTEROIDS_VERSION_PATCH=${{ env.product_ver_patch }} -DASTEROIDS_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Install/Build.log
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
+      shell: bash
       run: |
         set -o pipefail
         cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Install/Build.log
