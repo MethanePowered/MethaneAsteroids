@@ -201,8 +201,8 @@ jobs:
 
     - name: Archive Build Artifacts
       shell: bash
-      working-directory: Build/Output/${{ matrix.config_preset }}/Install/Apps
-      run: 7z a -t7z -mx=9 MethaneAsteroids_${{ matrix.name }}.7z *
+      working-directory: Build/Output/${{ matrix.config_preset }}/Install/
+      run: 7z a -t7z -mx=9 MethaneAsteroids_${{ matrix.name }}.7z -r- * Apps/*
 
     - name: Upload Archived Build Artifacts
       uses: actions/upload-artifact@v3
