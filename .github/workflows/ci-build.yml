@@ -177,7 +177,7 @@ jobs:
       run: |
         INSTALL_DIR=Build/Output/${{ matrix.config_preset }}/Install
         cp README.md $INSTALL_DIR/README.md
-        echo Methane Kit v.${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }} https://github.com/${{ github.repository }} > $INSTALL_DIR/Build-Info.txt
+        echo Methane Asteroids v.${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }} https://github.com/${{ github.repository }} > $INSTALL_DIR/Build-Info.txt
         echo   - Git repository: ${{ github.repositoryUrl }}, branch: ${{ github.ref_name }}, commit SHA: ${{ github.sha }} >> $INSTALL_DIR/Build-Info.txt
         echo   - GitHub Actions build url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} >> $INSTALL_DIR/Build-Info.txt
         echo   - Built with CMake configure preset ${{ matrix.config_preset }} and build preset ${{ matrix.build_preset }} >> $INSTALL_DIR/Build-Info.txt
@@ -202,7 +202,7 @@ jobs:
     - name: Archive Build Artifacts
       shell: bash
       working-directory: Build/Output/${{ matrix.config_preset }}/Install/
-      run: 7z a -t7z -mx=9 MethaneAsteroids_${{ matrix.name }}.7z -r- * Apps/*
+      run: 7z a -t7z -mx=9 MethaneAsteroids_${{ matrix.name }}.7z -r- ./* Apps/*
 
     - name: Upload Archived Build Artifacts
       uses: actions/upload-artifact@v3
