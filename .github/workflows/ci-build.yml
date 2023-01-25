@@ -41,56 +41,56 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win64_DX_Release"
             config_preset: "VS2022-Win64-DX-Default"
             build_preset: "VS2022-Win64-DX-Release"
             add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win64_VK_Release"
             config_preset: "VS2022-Win64-VK-Default"
             build_preset: "VS2022-Win64-VK-Release"
             add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win64_DX_Profile"
             config_preset: "VS2022-Win64-DX-Profile"
             build_preset: "VS2022-Win64-DX-Profile"
             add_tracy_app: true
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win64_VK_Profile"
             config_preset: "VS2022-Win64-VK-Profile"
             build_preset: "VS2022-Win64-VK-Profile"
             add_tracy_app: true
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win32_DX_Release"
             config_preset: "VS2022-Win32-DX-Default"
             build_preset: "VS2022-Win32-DX-Release"
             add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win32_VK_Release"
             config_preset: "VS2022-Win32-VK-Default"
             build_preset: "VS2022-Win32-VK-Release"
             add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win32_DX_Profile"
             config_preset: "VS2022-Win32-DX-Profile"
             build_preset: "VS2022-Win32-DX-Profile"
             add_tracy_app: true
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win32_VK_Profile"
             config_preset: "VS2022-Win32-VK-Profile"
