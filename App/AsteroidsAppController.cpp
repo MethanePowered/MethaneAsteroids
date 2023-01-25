@@ -32,23 +32,23 @@ namespace Methane::Samples
 
 AsteroidsAppController::AsteroidsAppController(AsteroidsApp& asteroids_app, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller("ASTEROIDS SETTINGS")
-    , Platform::Keyboard::ActionControllerBase<AsteroidsAppAction>(action_by_keyboard_state, {})
+    , pin::Keyboard::ActionControllerBase<AsteroidsAppAction>(action_by_keyboard_state, {})
     , m_asteroids_app(asteroids_app)
 {
     META_FUNCTION_TASK();
 }
 
-void AsteroidsAppController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state,
-                                               const Platform::Keyboard::StateChange& state_change)
+void AsteroidsAppController::OnKeyboardChanged(pin::Keyboard::Key key,
+                                               pin::Keyboard::KeyState key_state,
+                                               const pin::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    Platform::Keyboard::ActionControllerBase<AsteroidsAppAction>::OnKeyboardChanged(key, key_state, state_change);
+    pin::Keyboard::ActionControllerBase<AsteroidsAppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
 {
     META_FUNCTION_TASK();
-    
     const uint32_t asteroids_complexity = m_asteroids_app.GetAsteroidsComplexity();
     switch(action)
     {

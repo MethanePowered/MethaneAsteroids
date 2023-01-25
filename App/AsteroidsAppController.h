@@ -24,7 +24,7 @@ Asteroids application controller.
 #pragma once
 
 #include <Methane/Platform/Input/Controller.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/Input/KeyboardActionControllerBase.hpp>
 
 namespace Methane::Samples
 {
@@ -52,20 +52,22 @@ enum class AsteroidsAppAction
     SetComplexity9,
 };
 
+namespace pin = Platform::Input;
+
 class AsteroidsAppController final
-    : public Platform::Input::Controller
-    , public Platform::Keyboard::ActionControllerBase<AsteroidsAppAction>
+    : public pin::Controller
+    , public pin::Keyboard::ActionControllerBase<AsteroidsAppAction>
 {
 public:
     AsteroidsAppController(AsteroidsApp& asteroids_app, const ActionByKeyboardState& action_by_keyboard_state);
 
     // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
+    void OnKeyboardChanged(pin::Keyboard::Key, pin::Keyboard::KeyState, const pin::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
     
 protected:
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AsteroidsAppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
+    void        OnKeyboardKeyAction(AsteroidsAppAction, pin::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AsteroidsAppAction action) override;
     std::string GetKeyboardActionName(AsteroidsAppAction action) const override;
 

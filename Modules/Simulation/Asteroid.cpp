@@ -23,11 +23,14 @@ Random generated asteroid model with mesh and texture ready for rendering
 
 #include "Asteroid.h"
 
-#include <PerlinNoise.h>
+#include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <PerlinNoise.h>
+
 #include <cmath>
+#include <random>
 
 namespace Methane::Samples
 {
@@ -101,24 +104,31 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
     ComputeAverageNormals();
 }
 
-Asteroid::Asteroid(gfx::CommandQueue& render_cmd_queue)
+Asteroid::Asteroid(const rhi::RenderContext& render_context, const rhi::CommandQueue& render_cmd_queue)
     : BaseBuffers(render_cmd_queue, Mesh(3, true), "Asteroid")
 {
     META_FUNCTION_TASK();
-    SetTexture(GenerateTextureArray(render_cmd_queue, gfx::Dimensions(256, 256), 1, true, TextureNoiseParameters()));
+    SetTexture(GenerateTextureArray(render_context, render_cmd_queue,
+                                    gfx::Dimensions(256, 256), 1, true,
+                                    TextureNoiseParameters()));
 }
 
-Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::CommandQueue& render_cmd_queue, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped,
-                                                 const TextureNoiseParameters& noise_parameters)
+rhi::Texture Asteroid::GenerateTextureArray(const rhi::RenderContext& render_context,
+                                            const rhi::CommandQueue& render_cmd_queue,
+                                            const gfx::Dimensions& dimensions,
+                                            uint32_t array_size, bool mipmapped,
+                                            const TextureNoiseParameters& noise_parameters)
 {
     META_FUNCTION_TASK();
-    const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, noise_parameters);
-    Ptr<gfx::Texture> texture_array_ptr = gfx::Texture::CreateImage(render_cmd_queue.GetContext(), dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
-    texture_array_ptr->SetData(sub_resources, render_cmd_queue);
-    return texture_array_ptr;
+    const rhi::SubResources sub_resources = GenerateTextureArraySubResources(dimensions, array_size, noise_parameters);
+    rhi::Texture texture_array = render_context.CreateTexture(
+        rhi::TextureSettings::ForImage(dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped));
+    texture_array.SetData(sub_resources, render_cmd_queue);
+    return texture_array;
 }
 
-gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters)
+rhi::SubResources Asteroid::GenerateTextureArraySubResources(const gfx::Dimensions& dimensions, uint32_t array_size,
+                                                             const TextureNoiseParameters& noise_parameters)
 {
     META_FUNCTION_TASK();
     const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
@@ -126,7 +136,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
     const uint32_t         pixels_count = dimensions.GetPixelsCount();
     const uint32_t         row_stride   = pixel_size * dimensions.GetWidth();
 
-    gfx::Resource::SubResources sub_resources;
+    rhi::SubResources sub_resources;
     sub_resources.reserve(array_size);
 
     std::mt19937 rng(noise_parameters.random_seed); // NOSONAR - using pseudorandom generator is safe here
@@ -141,7 +151,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
                                  noise_parameters.scale,
                                  noise_parameters.strength);
 
-        sub_resources.emplace_back(std::move(sub_resource_data), gfx::Resource::SubResource::Index{ 0, array_index });
+        sub_resources.emplace_back(std::move(sub_resource_data), rhi::SubResource::Index{ 0, array_index });
     }
 
     return sub_resources;

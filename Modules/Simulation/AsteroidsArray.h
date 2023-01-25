@@ -24,12 +24,11 @@ Random generated asteroids array with uber-mesh and textures ready for rendering
 #pragma once
 
 #include "Asteroid.h"
-
-#include <Methane/Graphics/Mesh.h>
-#include <Methane/Graphics/Sampler.h>
-#include <Methane/Graphics/RenderPass.h>
-#include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/Graphics/RHI/RenderState.h>
+#include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
+#include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/Camera.h>
 
 namespace hlslpp // NOSONAR
@@ -41,12 +40,23 @@ namespace hlslpp // NOSONAR
 
 #include <taskflow/taskflow.hpp>
 
+
+namespace Methane::Graphics::Rhi
+{
+class RenderPattern;
+class ViewState;
+class ProgramBindings;
+class RenderCommandList;
+class ParallelRenderCommandList;
+}
+
 namespace Methane::Samples
 {
 
 namespace gfx = Graphics;
 
-class AsteroidsArray final : public gfx::TexturedMeshBuffers<hlslpp::AsteroidUniforms>
+class AsteroidsArray final
+    : public gfx::TexturedMeshBuffers<hlslpp::AsteroidUniforms>
 {
 public:
     using BaseBuffers = gfx::TexturedMeshBuffers<hlslpp::AsteroidUniforms>;
@@ -91,7 +101,7 @@ public:
     };
 
     using Parameters               = std::vector<Asteroid::Parameters>;
-    using TextureArraySubresources = std::vector<gfx::Resource::SubResources>;
+    using TextureArraySubresources = std::vector<rhi::SubResources>;
 
     struct ContentState : public std::enable_shared_from_this<ContentState>
     {
@@ -105,21 +115,33 @@ public:
         Parameters               parameters;
     };
 
-    AsteroidsArray(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const Settings& settings);
-    AsteroidsArray(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const Settings& settings, ContentState& state);
+    AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
+                   const rhi::RenderPattern& render_pattern,
+                   const Settings& settings);
+
+    AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
+                   const rhi::RenderPattern& render_pattern,
+                   const Settings& settings,
+                   ContentState& state);
 
     [[nodiscard]] const Settings& GetSettings() const         { return m_settings; }
     [[nodiscard]] const Ptr<ContentState>& GetState() const   { return m_content_state_ptr; }
     using BaseBuffers::GetUniformsBufferSize;
 
-    Ptrs<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr,
-                                                     const Ptr<gfx::Buffer>& scene_uniforms_buffer_ptr,
-                                                     const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr,
-                                                     Data::Index frame_index) const;
+    std::vector<rhi::ProgramBindings> CreateProgramBindings(const rhi::Buffer& constants_buffer,
+                                                            const rhi::Buffer& scene_uniforms_buffer,
+                                                            const rhi::Buffer& asteroids_uniforms_buffer,
+                                                            Data::Index frame_index) const;
 
     bool Update(double elapsed_seconds, double delta_seconds);
-    void Draw(gfx::RenderCommandList& cmd_list, const gfx::InstancedMeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
-    void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::InstancedMeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
+
+    void Draw(const rhi::RenderCommandList& cmd_list,
+              const gfx::InstancedMeshBufferBindings& buffer_bindings,
+              const rhi::ViewState& view_state);
+
+    void DrawParallel(const rhi::ParallelRenderCommandList& parallel_cmd_list,
+                      const gfx::InstancedMeshBufferBindings& buffer_bindings,
+                      const rhi::ViewState& view_state);
 
     [[nodiscard]] bool IsMeshLodColoringEnabled() const             { return m_mesh_lod_coloring_enabled; }
     void SetMeshLodColoringEnabled(bool mesh_lod_coloring_enabled)  { m_mesh_lod_coloring_enabled = mesh_lod_coloring_enabled; }
@@ -134,17 +156,19 @@ protected:
 private:
     using MeshSubsetByInstanceIndex = std::vector<uint32_t>;
 
-    void UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float3& eye_position, float elapsed_radians);
+    void UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters,
+                                const hlslpp::float3& eye_position,
+                                float elapsed_radians);
 
-    const Settings               m_settings;
-    const Ptr<gfx::CommandQueue> m_render_cmd_queue_ptr;
-    Ptr<ContentState>            m_content_state_ptr;
-    Textures                     m_unique_textures;
-    Ptr<gfx::Sampler>            m_texture_sampler_ptr;
-    Ptr<gfx::RenderState>        m_render_state_ptr;
-    MeshSubsetByInstanceIndex    m_mesh_subset_by_instance_index;
-    bool                         m_mesh_lod_coloring_enabled = false;
-    float                        m_min_mesh_lod_screen_size_log_2;
+    Settings                  m_settings;
+    rhi::CommandQueue         m_render_cmd_queue;
+    Ptr<ContentState>         m_content_state_ptr;
+    Textures                  m_unique_textures;
+    rhi::Sampler              m_texture_sampler;
+    rhi::RenderState          m_render_state;
+    MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
+    bool                      m_mesh_lod_coloring_enabled = false;
+    float                     m_min_mesh_lod_screen_size_log_2;
 };
 
 } // namespace Methane::Samples
