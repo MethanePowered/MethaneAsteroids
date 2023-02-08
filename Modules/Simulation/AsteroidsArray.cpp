@@ -384,7 +384,7 @@ void AsteroidsArray::Draw(const rhi::RenderCommandList& cmd_list,
         buffer_bindings.uniforms_buffer.SetData(GetFinalPassUniformsSubresources(), m_render_cmd_queue);
     });
 
-    static META_DEBUG_GROUP_VAR(s_debug_group, "Asteroids rendering");
+    META_DEBUG_GROUP_VAR(s_debug_group, "Asteroids rendering");
     cmd_list.ResetWithState(m_render_state, &s_debug_group);
     cmd_list.SetViewState(view_state);
 
@@ -415,7 +415,7 @@ void AsteroidsArray::DrawParallel(const rhi::ParallelRenderCommandList& parallel
         buffer_bindings.uniforms_buffer.SetData(GetFinalPassUniformsSubresources(), m_render_cmd_queue);
     });
 
-    static META_DEBUG_GROUP_VAR(s_debug_group, "Parallel Asteroids rendering");
+    META_DEBUG_GROUP_VAR(s_debug_group, "Parallel Asteroids rendering");
     parallel_cmd_list.ResetWithState(m_render_state, &s_debug_group);
     parallel_cmd_list.SetViewState(view_state);
 

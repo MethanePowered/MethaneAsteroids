@@ -135,7 +135,7 @@ void Planet::Draw(const rhi::RenderCommandList& cmd_list,
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), sizeof(hlslpp::PlanetUniforms));
     buffer_bindings.uniforms_buffer.SetData(m_mesh_buffers.GetFinalPassUniformsSubresources(), m_render_cmd_queue);
 
-    static META_DEBUG_GROUP_VAR(s_debug_group, "Planet Rendering");
+    META_DEBUG_GROUP_VAR(s_debug_group, "Planet Rendering");
     cmd_list.ResetWithState(m_render_state, &s_debug_group);
     cmd_list.SetViewState(view_state);
     m_mesh_buffers.Draw(cmd_list, buffer_bindings.program_bindings);
