@@ -576,7 +576,7 @@
             "name": "VS2022-Win64-DX-Scan",
             "displayName": "Scan - VS2022 - Windows x64 (DirectX)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
-            "generator": "Visual Studio 16 2019",
+            "generator": "Visual Studio 17 2022",
             "inherits": [
                 "Ninja-Scan",
                 "VS2022-Win64-DX-Default"
@@ -1015,6 +1015,23 @@
             "description": "Scanning build with Visual Studio 2019 for Windows x86 (DirectX)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win32-DX-Scan",
+            "configuration": "Debug"
+        },
+
+        {
+            "name": "VS2022-Win64-DX-Scan",
+            "displayName": "Scan - VS2022 - Windows x64 (DirectX)",
+            "description": "Scanning build with Visual Studio 2022 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win64-DX-Scan",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2022-Win32-DX-Scan",
+            "displayName": "Scan - VS2022 - Windows x86 (DirectX)",
+            "description": "Scanning build with Visual Studio 2022 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win32-DX-Scan",
             "configuration": "Debug"
         },
 
