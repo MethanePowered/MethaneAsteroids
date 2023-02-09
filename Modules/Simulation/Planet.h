@@ -23,14 +23,18 @@ Planet rendering primitive
 
 #pragma once
 
+#include <Methane/Graphics/RHI/CommandQueue.h>
+#include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/RenderCommandList.h>
+#include <Methane/Graphics/RHI/RenderState.h>
+#include <Methane/Graphics/RHI/ViewState.h>
+#include <Methane/Graphics/RHI/Buffer.h>
+#include <Methane/Graphics/RHI/Program.h>
+#include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
-#include <Methane/Graphics/Camera.h>
-#include <Methane/Graphics/RenderState.h>
-#include <Methane/Graphics/Buffer.h>
-#include <Methane/Graphics/Program.h>
-#include <Methane/Graphics/Sampler.h>
-#include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Mesh.h>
+#include <Methane/Graphics/Camera.h>
+#include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/ImageLoader.h>
 
 namespace hlslpp // NOSONAR
@@ -46,6 +50,7 @@ namespace Methane::Samples
 {
 
 namespace gfx = Graphics;
+namespace rhi = Graphics::Rhi;
 
 struct RenderPattern;
 
@@ -54,22 +59,29 @@ class Planet
 public:
     struct Settings
     {
-        const gfx::Camera&        view_camera;
-        const gfx::Camera&        light_camera;
-        std::string               texture_path;
-        hlslpp::float3            position;
-        float                     scale;
-        float                     spin_velocity_rps   = 0.3F; // (rps = radians per second)
-        bool                      depth_reversed      = false;
-        gfx::ImageLoader::Options image_options       = gfx::ImageLoader::Options::None;
-        float                     lod_bias            = 0.F;
+        const gfx::Camera&           view_camera;
+        const gfx::Camera&           light_camera;
+        std::string                  texture_path;
+        hlslpp::float3               position;
+        float                        scale;
+        float                        spin_velocity_rps   = 0.3F; // (rps = radians per second)
+        bool                         depth_reversed      = false;
+        gfx::ImageLoader::OptionMask image_options       = {};
+        float                        lod_bias            = 0.F;
     };
 
-    Planet(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings);
+    Planet(const rhi::CommandQueue& render_cmd_queue,
+           const rhi::RenderPattern& render_pattern,
+           const gfx::ImageLoader& image_loader,
+           const Settings& settings);
 
-    Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
+    rhi::ProgramBindings CreateProgramBindings(const rhi::Buffer& constants_buffer_ptr,
+                                               const rhi::Buffer& uniforms_buffer_ptr,
+                                               Data::Index frame_index) const;
     bool Update(double elapsed_seconds, double delta_seconds);
-    void Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
+    void Draw(const rhi::RenderCommandList& cmd_list,
+              const gfx::MeshBufferBindings& buffer_bindings,
+              const rhi::ViewState& view_state);
 
 private:
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::PlanetUniforms>;
@@ -87,14 +99,18 @@ private:
         };
     };
 
-    Planet(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
+    Planet(const rhi::CommandQueue& render_cmd_queue,
+           const rhi::RenderPattern& render_pattern,
+           const gfx::ImageLoader& image_loader,
+           const Settings& settings,
+           const gfx::BaseMesh<Vertex>& mesh);
 
-    Settings                     m_settings;
-    gfx::RenderContext&          m_context;
-    const Ptr<gfx::CommandQueue> m_render_cmd_queue_ptr;
-    TexturedMeshBuffers          m_mesh_buffers;
-    Ptr<gfx::Sampler>            m_texture_sampler_ptr;
-    Ptr<gfx::RenderState>        m_render_state_ptr;
+    Settings            m_settings;
+    rhi::RenderContext  m_context;
+    rhi::CommandQueue   m_render_cmd_queue;
+    TexturedMeshBuffers m_mesh_buffers;
+    rhi::Sampler        m_texture_sampler;
+    rhi::RenderState    m_render_state;
 };
 
 } // namespace Methane::Graphics
