@@ -108,8 +108,8 @@ private:
     uint32_t                          m_asteroids_complexity          = 0U;
     bool                              m_is_parallel_rendering_enabled = true;
     hlslpp::SceneUniforms             m_scene_uniforms{ };
-    rhi::SubResources                 m_scene_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
+    rhi::SubResource                  m_scene_uniforms_subresource{
+        reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms)
     };
 
     rhi::RenderPattern                m_asteroids_render_pattern;

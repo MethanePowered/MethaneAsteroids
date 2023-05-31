@@ -278,7 +278,7 @@ AsteroidsArray::AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
             rhi::TextureSettings::ForImage(m_settings.texture_dimensions,
                                            static_cast<uint32_t>(texture_subresources.size()),
                                            gfx::PixelFormat::RGBA8Unorm, true)));
-        m_unique_textures.back().SetData(texture_subresources, m_render_cmd_queue);
+        m_unique_textures.back().SetData(m_render_cmd_queue, texture_subresources);
         m_unique_textures.back().SetName(fmt::format("Asteroid Texture {:d}", texture_index));
         texture_index++;
     }
@@ -381,7 +381,7 @@ void AsteroidsArray::Draw(const rhi::RenderCommandList& cmd_list,
 
     // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
     auto uniforms_update_future = std::async([this, &buffer_bindings]() {
-        buffer_bindings.uniforms_buffer.SetData(GetFinalPassUniformsSubresources(), m_render_cmd_queue);
+        buffer_bindings.uniforms_buffer.SetData(m_render_cmd_queue, GetFinalPassUniformsSubresource());
     });
 
     META_DEBUG_GROUP_VAR(s_debug_group, "Asteroids rendering");
@@ -412,7 +412,7 @@ void AsteroidsArray::DrawParallel(const rhi::ParallelRenderCommandList& parallel
 
     // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
     auto uniforms_update_future = std::async([this, &buffer_bindings]() {
-        buffer_bindings.uniforms_buffer.SetData(GetFinalPassUniformsSubresources(), m_render_cmd_queue);
+        buffer_bindings.uniforms_buffer.SetData(m_render_cmd_queue, GetFinalPassUniformsSubresource());
     });
 
     META_DEBUG_GROUP_VAR(s_debug_group, "Parallel Asteroids rendering");

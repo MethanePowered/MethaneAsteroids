@@ -123,7 +123,7 @@ rhi::Texture Asteroid::GenerateTextureArray(const rhi::RenderContext& render_con
     const rhi::SubResources sub_resources = GenerateTextureArraySubResources(dimensions, array_size, noise_parameters);
     rhi::Texture texture_array = render_context.CreateTexture(
         rhi::TextureSettings::ForImage(dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped));
-    texture_array.SetData(sub_resources, render_cmd_queue);
+    texture_array.SetData(render_cmd_queue, sub_resources);
     return texture_array;
 }
 
