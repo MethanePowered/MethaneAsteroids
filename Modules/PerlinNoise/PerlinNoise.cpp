@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2023 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,35 +16,35 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Noise.cpp
+FILE: PerlinNoise.cpp
 Multi-octave simplex noise generator in range [0, 1]
 
 ******************************************************************************/
 
 #include "PerlinNoise.h"
-
 #include <Methane/Instrumentation.h>
 
-#include <hlsl++_vector_float.h>
-#include <simplexnoise1234.h>
+#include <hlsl++.h>
+#include <FastNoise/FastNoise.h>
 
 namespace Methane::Graphics
 {
 
 template<typename VectorType>
-float GetPerlinNoise(const VectorType& pos) noexcept;
+float GetPerlinNoise(const FastNoise::Simplex& simplex_noise, const VectorType& pos, int seed) noexcept;
 
-template<> float GetPerlinNoise(const hlslpp::float2& pos) noexcept { return SimplexNoise1234::noise(pos.x, pos.y); }
-template<> float GetPerlinNoise(const hlslpp::float3& pos) noexcept { return SimplexNoise1234::noise(pos.x, pos.y, pos.z); }
-template<> float GetPerlinNoise(const hlslpp::float4& pos) noexcept { return SimplexNoise1234::noise(pos.x, pos.y, pos.z, pos.w); }
+template<> float GetPerlinNoise(const FastNoise::Simplex& simplex_noise, const hlslpp::float2& pos, int seed) noexcept    { return simplex_noise.GenSingle2D(pos.x, pos.y, seed); }
+template<> float GetPerlinNoise(const FastNoise::Simplex& simplex_noise, const hlslpp::float3& pos, int seed) noexcept    { return simplex_noise.GenSingle3D(pos.x, pos.y, pos.z, seed); }
+template<> float GetPerlinNoise(const FastNoise::Simplex& simplex_noise, const hlslpp::float4& pos, int seed) noexcept    { return simplex_noise.GenSingle4D(pos.x, pos.y, pos.z, pos.w, seed); }
 
-template<> float GetPerlinNoise(const Data::RawVector2F& pos) noexcept { return SimplexNoise1234::noise(pos[0], pos[1]); }
-template<> float GetPerlinNoise(const Data::RawVector3F& pos) noexcept { return SimplexNoise1234::noise(pos[0], pos[1], pos[2]); }
-template<> float GetPerlinNoise(const Data::RawVector4F& pos) noexcept { return SimplexNoise1234::noise(pos[0], pos[1], pos[2], pos[3]); }
+template<> float GetPerlinNoise(const FastNoise::Simplex& simplex_noise, const Data::RawVector2F& pos, int seed) noexcept { return simplex_noise.GenSingle2D(pos[0], pos[1], seed); }
+template<> float GetPerlinNoise(const FastNoise::Simplex& simplex_noise, const Data::RawVector3F& pos, int seed) noexcept { return simplex_noise.GenSingle3D(pos[0], pos[1], pos[2], seed); }
+template<> float GetPerlinNoise(const FastNoise::Simplex& simplex_noise, const Data::RawVector4F& pos, int seed) noexcept { return simplex_noise.GenSingle4D(pos[0], pos[1], pos[2], pos[3], seed); }
 
-PerlinNoise::PerlinNoise(float persistence, size_t octaves_count)
+PerlinNoise::PerlinNoise(float persistence, size_t octaves_count, int seed)
     : m_weights(GetWeights(persistence, octaves_count))
     , m_norm_multiplier(0.5F / GetWeightsSum(m_weights))
+    , m_seed(seed)
 {
     META_FUNCTION_TASK();
 }
@@ -61,10 +61,11 @@ template<typename VectorType>
 float PerlinNoise::GetValue(VectorType pos) const noexcept
 {
     META_FUNCTION_TASK();
+    const FastNoise::Simplex& simplex_noise = GetSimplexNoise();
     float noise = 0.F;
     for (const float weight : m_weights)
     {
-        noise += weight * GetPerlinNoise(pos);
+        noise += weight * GetPerlinNoise(simplex_noise, pos, m_seed);
         pos *= 2.F;
     }
     return noise * m_norm_multiplier + 0.5F;
@@ -92,6 +93,13 @@ float PerlinNoise::GetWeightsSum(const PerlinNoise::Weights& weights) noexcept
         weights_sum += weight;
     }
     return weights_sum;
+}
+
+const FastNoise::Simplex& PerlinNoise::GetSimplexNoise() const
+{
+    META_FUNCTION_TASK();
+    static const auto s_simplex_noise_ptr = FastNoise::New<FastNoise::Simplex>();
+    return *s_simplex_noise_ptr;
 }
 
 } // namespace Methane::Graphics

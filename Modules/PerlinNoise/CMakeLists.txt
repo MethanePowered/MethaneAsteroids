@@ -16,7 +16,7 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
-        PerlinNoise
+        FastNoise2
 )
 
 set_target_properties(${TARGET}

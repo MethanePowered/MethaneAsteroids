@@ -7,6 +7,6 @@ include(CMRC)
 # C++ libraries
 # Keep MethaneKit first to include MethaneBuildOptions.cmake as early as possible
 include(MethaneKit) # keep 1-st
-include(PerlinNoise)
+include(FastNoise2)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
