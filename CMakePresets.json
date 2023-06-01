@@ -253,11 +253,17 @@
             "inherits": "Ninja-Default",
             "hidden": true,
             "cacheVariables": {
-                "CMAKE_OSX_ARCHITECTURES": "arm64",
-                "CMAKE_SYSTEM_PROCESSOR": "aarch64",
                 "METHANE_PRECOMPILED_HEADERS_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"
+                },
+                "CMAKE_TOOLCHAIN_FILE": {
+                    "type": "STRING",
+                    "value": "Externals/iOS-Toolchain.cmake"
+                },
+                "PLATFORM": {
+                    "type": "STRING",
+                    "value": "MAC_ARM64"
                 }
             },
             "condition": {
@@ -777,10 +783,6 @@
                 "Xcode-Mac-MTL-Default"
             ],
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": {
-                    "type": "STRING",
-                    "value": "Externals/iOS-Toolchain.cmake"
-                },
                 "PLATFORM": {
                     "type": "STRING",
                     "value": "SIMULATORARM64"
