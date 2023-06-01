@@ -254,6 +254,7 @@
             "hidden": true,
             "cacheVariables": {
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "CMAKE_SYSTEM_PROCESSOR": "aarch64",
                 "METHANE_PRECOMPILED_HEADERS_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"
