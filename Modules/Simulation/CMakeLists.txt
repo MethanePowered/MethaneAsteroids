@@ -23,6 +23,7 @@ target_link_libraries(${TARGET}
         MethanePerlinNoise
         MethaneBuildOptions
         TaskFlow
+        FastNoise2
 )
 
 set_target_properties(${TARGET}
