@@ -122,13 +122,13 @@ Start Terminal, go to `MethaneAsteroids` root directory, generate XCode workspac
 
 ```console
 OUTPUT_DIR=Build/Output/XCode/macOS
-cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
+cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="[arm64|x86_64]" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
 cmake --build $OUTPUT_DIR/Build --config Release --target install
 ```
 
 Note that starting with XCode 12 and Clang 12 build architectures have to be specified explicitly
-using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` to build the fat binary.
-This option should be omitted with earlier versions of Clang on macOS.
+using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES="[arm64|x86_64]"` (multiple architecture are not supported by Asteroids sample)
+to build the fat binary. This option should be omitted with earlier versions of Clang on macOS.
 
 Auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) can make it more simple for you:
 

@@ -146,40 +146,6 @@
                 }
             }
         },
-        {
-            "name": "Ninja-Scan",
-            "description": "Static scanning Ninja Multi configuration for builds under Sonar Cloud code analyzer",
-            "inherits": "Ninja-Default",
-            "generator": "Ninja",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "METHANE_RHI_PIMPL_INLINE_ENABLED": {
-                    "type": "BOOL",
-                    "value": "OFF"
-                },
-                "METHANE_PRECOMPILED_HEADERS_ENABLED": {
-                    "type": "BOOL",
-                    "value": "OFF"
-                },
-                "METHANE_CODE_COVERAGE_ENABLED": {
-                    "type": "BOOL",
-                    "value": "ON"
-                },
-                "METHANE_ITT_INSTRUMENTATION_ENABLED": {
-                    "type": "BOOL",
-                    "value": "OFF"
-                },
-                "METHANE_UNITY_BUILD_ENABLED": {
-                    "type": "BOOL",
-                    "value": "OFF"
-                },
-                "CMAKE_EXPORT_COMPILE_COMMANDS": {
-                    "type": "BOOL",
-                    "value": "ON"
-                }
-            }
-        },
 
         {
             "name": "Ninja-Default-Vulkan",
@@ -195,17 +161,6 @@
         {
             "name": "Ninja-Profile-Vulkan",
             "inherits": "Ninja-Profile",
-            "hidden": true,
-            "cacheVariables": {
-                "METHANE_GFX_VULKAN_ENABLED": {
-                    "type": "BOOL",
-                    "value": "ON"
-                }
-            }
-        },
-        {
-            "name": "Ninja-Scan-Vulkan",
-            "inherits": "Ninja-Scan",
             "hidden": true,
             "cacheVariables": {
                 "METHANE_GFX_VULKAN_ENABLED": {
@@ -249,7 +204,7 @@
             }
         },
         {
-            "name": "Ninja-Mac-Default",
+            "name": "Ninja-Mac-Arm64-Default",
             "inherits": "Ninja-Default",
             "hidden": true,
             "cacheVariables": {
@@ -264,6 +219,10 @@
                 "PLATFORM": {
                     "type": "STRING",
                     "value": "MAC_ARM64"
+                },
+                "DEPLOYMENT_TARGET": {
+                    "type": "STRING",
+                    "value": "13.0"
                 }
             },
             "condition": {
@@ -277,6 +236,17 @@
                 },
                 "jetbrains.com/clion": {
                     "toolchain": "XCode"
+                }
+            }
+        },
+        {
+            "name": "Ninja-Mac-x86-64-Default",
+            "inherits": "Ninja-Mac-Arm64-Default",
+            "hidden": true,
+            "cacheVariables": {
+                "PLATFORM": {
+                    "type": "STRING",
+                    "value": "MAC"
                 }
             }
         },
@@ -313,24 +283,6 @@
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
                 "Ninja-Profile-Vulkan",
-                "Ninja-Win-Default"
-            ]
-        },
-        {
-            "name": "Ninja-Win-DX-Scan",
-            "displayName": "Scan - Ninja Multi-Config - Windows (DirectX)",
-            "description": "Scanning configuration using Ninja Multi-Config generator for Windows (DirectX)",
-            "inherits": [
-                "Ninja-Scan",
-                "Ninja-Win-Default"
-            ]
-        },
-        {
-            "name": "Ninja-Win-VK-Scan",
-            "displayName": "Scan - Ninja Multi-Config - Windows (Vulkan)",
-            "description": "Scanning configuration using Ninja Multi-Config generator for Windows (Vulkan)",
-            "inherits": [
-                "Ninja-Scan-Vulkan",
                 "Ninja-Win-Default"
             ]
         },
@@ -434,57 +386,6 @@
         },
 
         {
-            "name": "VS2019-Win64-DX-Scan",
-            "displayName": "Scan - VS2019 - Windows x64 (DirectX)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Scan",
-                "VS2019-Win64-DX-Default"
-            ]
-        },
-        {
-            "name": "VS2019-Win32-DX-Scan",
-            "displayName": "Scan - VS2019 - Windows x86 (DirectX)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Scan",
-                "VS2019-Win32-DX-Default"
-            ]
-        },
-        {
-            "name": "VS2019-Win64-VK-Scan",
-            "displayName": "Scan - VS2019 - Windows x64 (Vulkan)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "VS2019-Win64-DX-Scan"
-            ],
-            "cacheVariables": {
-                "METHANE_GFX_VULKAN_ENABLED": {
-                    "type": "BOOL",
-                    "value": "ON"
-                }
-            }
-        },
-        {
-            "name": "VS2019-Win32-VK-Scan",
-            "displayName": "Scan - VS2019 - Windows x86 (Vulkan)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "VS2019-Win32-DX-Scan"
-            ],
-            "cacheVariables": {
-                "METHANE_GFX_VULKAN_ENABLED": {
-                    "type": "BOOL",
-                    "value": "ON"
-                }
-            }
-        },
-
-        {
             "name": "VS2022-Win64",
             "hidden": true,
             "generator": "Visual Studio 17 2022",
@@ -580,57 +481,6 @@
         },
 
         {
-            "name": "VS2022-Win64-DX-Scan",
-            "displayName": "Scan - VS2022 - Windows x64 (DirectX)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
-            "generator": "Visual Studio 17 2022",
-            "inherits": [
-                "Ninja-Scan",
-                "VS2022-Win64-DX-Default"
-            ]
-        },
-        {
-            "name": "VS2022-Win32-DX-Scan",
-            "displayName": "Scan - VS2022 - Windows x86 (DirectX)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
-            "generator": "Visual Studio 17 2022",
-            "inherits": [
-                "Ninja-Scan",
-                "VS2022-Win32-DX-Default"
-            ]
-        },
-        {
-            "name": "VS2022-Win64-VK-Scan",
-            "displayName": "Scan - VS2022 - Windows x64 (Vulkan)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
-            "generator": "Visual Studio 17 2022",
-            "inherits": [
-                "VS2022-Win64-DX-Scan"
-            ],
-            "cacheVariables": {
-                "METHANE_GFX_VULKAN_ENABLED": {
-                    "type": "BOOL",
-                    "value": "ON"
-                }
-            }
-        },
-        {
-            "name": "VS2022-Win32-VK-Scan",
-            "displayName": "Scan - VS2022 - Windows x86 (Vulkan)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
-            "generator": "Visual Studio 17 2022",
-            "inherits": [
-                "VS2022-Win32-DX-Scan"
-            ],
-            "cacheVariables": {
-                "METHANE_GFX_VULKAN_ENABLED": {
-                    "type": "BOOL",
-                    "value": "ON"
-                }
-            }
-        },
-
-        {
             "name": "Ninja-Lin-VK-Default",
             "displayName": "Default - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Default configuration using Ninja Multi-Config generator for Linux (Vulkan)",
@@ -644,15 +494,6 @@
             "description": "Profiling configuration using Ninja Multi-Config generator for Linux (Vulkan)",
             "inherits": [
                 "Ninja-Profile",
-                "Ninja-Lin-Default"
-            ]
-        },
-        {
-            "name": "Ninja-Lin-VK-Scan",
-            "displayName": "Scan - Ninja Multi-Config - Linux (Vulkan)",
-            "description": "Scanning configuration using Ninja Multi-Config generator for Linux (Vulkan)",
-            "inherits": [
-                "Ninja-Scan",
                 "Ninja-Lin-Default"
             ]
         },
@@ -693,35 +534,30 @@
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
         },
-        {
-            "name": "Make-Lin-VK-Scan",
-            "displayName": "Scan - Unix Makefiles - Linux (Vulkan)",
-            "description": "Scanning configuration using Unix Makefiles generator for Linux (Vulkan)",
-            "generator": "Unix Makefiles",
-            "inherits": [
-                "Ninja-Scan",
-                "Ninja-Lin-VK-Default"
-            ],
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
 
         {
-            "name": "Ninja-Mac-MTL-Default",
-            "displayName": "Default - Ninja Multi-Config - MacOS (Metal)",
-            "description": "Default configuration using Ninja Multi-Config generator for MacOS (Metal)",
+            "name": "Ninja-Mac-Arm64-MTL-Default",
+            "displayName": "Default - Ninja Multi-Config - MacOS Arm64 (Metal)",
+            "description": "Default configuration using Ninja Multi-Config generator for MacOS Arm64 (Metal)",
             "inherits": [
-                "Ninja-Mac-Default"
+                "Ninja-Mac-Arm64-Default"
             ]
         },
         {
-            "name": "Ninja-Mac-MTL-Profile",
+            "name": "Ninja-Mac-x86-64-MTL-Default",
+            "displayName": "Default - Ninja Multi-Config - MacOS x86_64 (Metal)",
+            "description": "Default configuration using Ninja Multi-Config generator for MacOS x86_64 (Metal)",
+            "inherits": [
+                "Ninja-Mac-x86-64-Default"
+            ]
+        },
+        {
+            "name": "Ninja-Mac-Arm64-MTL-Profile",
             "displayName": "Profile - Ninja Multi-Config - MacOS (Metal)",
             "description": "Profiling configuration using Ninja Multi-Config generator for MacOS (Metal)",
             "inherits": [
                 "Ninja-Profile",
-                "Ninja-Mac-Default"
+                "Ninja-Mac-Arm64-Default"
             ],
             "cacheVariables": {
                 "METHANE_PRECOMPILED_HEADERS_ENABLED": {
@@ -731,48 +567,56 @@
             }
         },
         {
-            "name": "Ninja-Mac-MTL-Scan",
-            "displayName": "Scan - Ninja Multi-Config - MacOS (Metal)",
-            "description": "Scanning configuration using Ninja Multi-Config generator for MacOS (Metal)",
+            "name": "Ninja-Mac-x86-64-MTL-Profile",
+            "displayName": "Profile - Ninja Multi-Config - MacOS x86_64 (Metal)",
+            "description": "Profiling configuration using Ninja Multi-Config generator for MacOS x86_64 (Metal)",
             "inherits": [
-                "Ninja-Scan",
-                "Ninja-Mac-Default"
-            ]
+                "Ninja-Profile",
+                "Ninja-Mac-x86-64-Default"
+            ],
+            "cacheVariables": {
+                "METHANE_PRECOMPILED_HEADERS_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
         },
 
         {
-            "name": "Xcode-Mac-MTL-Default",
-            "displayName": "Default - Xcode - MacOS (Metal)",
-            "description": "Default configuration using Xcode generator for MacOS (Metal)",
+            "name": "Xcode-Mac-Arm64-MTL-Default",
+            "displayName": "Default - Xcode - MacOS Arm64 (Metal)",
+            "description": "Default configuration using Xcode generator for MacOS Arm64 (Metal)",
             "generator": "Xcode",
             "inherits": [
-                "Ninja-Mac-MTL-Default"
+                "Ninja-Mac-Arm64-MTL-Default"
             ]
         },
         {
-            "name": "Xcode-Mac-MTL-Profile",
-            "displayName": "Profile - Xcode - MacOS (Metal)",
-            "description": "Profiling configuration using Xcode generator for MacOS (Metal)",
+            "name": "Xcode-Mac-x86-64-MTL-Default",
+            "displayName": "Default - Xcode - MacOS x86_64 (Metal)",
+            "description": "Default configuration using Xcode generator for MacOS x86_64 (Metal)",
             "generator": "Xcode",
             "inherits": [
-                "Ninja-Mac-MTL-Profile"
+                "Ninja-Mac-x86-64-MTL-Default"
             ]
         },
         {
-            "name": "Xcode-Mac-MTL-Scan",
-            "displayName": "Scan - Xcode - MacOS (Metal)",
-            "description": "Scanning configuration using Xcode generator for MacOS (Metal)",
+            "name": "Xcode-Mac-Arm64-MTL-Profile",
+            "displayName": "Profile - Xcode - MacOS Arm64 (Metal)",
+            "description": "Profiling configuration using Xcode generator for MacOS Arm64 (Metal)",
             "generator": "Xcode",
             "inherits": [
-                "Ninja-Scan",
-                "Ninja-Mac-Default"
-            ],
-            "cacheVariables": {
-                "METHANE_PRECOMPILED_HEADERS_ENABLED": {
-                    "type": "BOOL",
-                    "value": "OFF"
-                }
-            }
+                "Ninja-Mac-Arm64-MTL-Profile"
+            ]
+        },
+        {
+            "name": "Xcode-Mac-x86-64-MTL-Profile",
+            "displayName": "Profile - Xcode - MacOS x86_64 (Metal)",
+            "description": "Profiling configuration using Xcode generator for MacOS x86_64 (Metal)",
+            "generator": "Xcode",
+            "inherits": [
+                "Ninja-Mac-x86-64-MTL-Profile"
+            ]
         },
 
         {
@@ -780,7 +624,7 @@
             "displayName": "Default - Xcode - iOS Simulator (Metal)",
             "description": "Default configuration using Xcode generator for iOS Simulator (Metal)",
             "inherits": [
-                "Xcode-Mac-MTL-Default"
+                "Xcode-Mac-Arm64-MTL-Default"
             ],
             "cacheVariables": {
                 "PLATFORM": {
@@ -913,14 +757,6 @@
             "configurePreset": "Ninja-Win-DX-Profile",
             "configuration": "RelWithDebInfo"
         },
-        {
-            "name": "Ninja-Win-DX-Scan",
-            "displayName": "Scan - Ninja Multi-Config - Windows (DirectX)",
-            "description": "Scanning build with Ninja Multi-Config for Windows (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Win-DX-Scan",
-            "configuration": "Debug"
-        },
 
         {
             "name": "Ninja-Win-VK-Debug",
@@ -945,14 +781,6 @@
             "inherits": [ "Windows-Build" ],
             "configurePreset": "Ninja-Win-VK-Profile",
             "configuration": "RelWithDebInfo"
-        },
-        {
-            "name": "Ninja-Win-VK-Scan",
-            "displayName": "Scan - Ninja Multi-Config - Windows (Vulkan)",
-            "description": "Scanning build with Ninja Multi-Config for Windows (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Win-VK-Scan",
-            "configuration": "Debug"
         },
 
         {
@@ -1005,40 +833,6 @@
         },
 
         {
-            "name": "VS2019-Win64-DX-Scan",
-            "displayName": "Scan - VS2019 - Windows x64 (DirectX)",
-            "description": "Scanning build with Visual Studio 2019 for Windows x64 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-DX-Scan",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2019-Win32-DX-Scan",
-            "displayName": "Scan - VS2019 - Windows x86 (DirectX)",
-            "description": "Scanning build with Visual Studio 2019 for Windows x86 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-DX-Scan",
-            "configuration": "Debug"
-        },
-
-        {
-            "name": "VS2022-Win64-DX-Scan",
-            "displayName": "Scan - VS2022 - Windows x64 (DirectX)",
-            "description": "Scanning build with Visual Studio 2022 for Windows x64 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2022-Win64-DX-Scan",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2022-Win32-DX-Scan",
-            "displayName": "Scan - VS2022 - Windows x86 (DirectX)",
-            "description": "Scanning build with Visual Studio 2022 for Windows x86 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2022-Win32-DX-Scan",
-            "configuration": "Debug"
-        },
-
-        {
             "name": "VS2019-Win64-VK-Debug",
             "displayName": "Debug - VS2019 - Windows x64 (Vulkan)",
             "description": "Debug build with Visual Studio 2019 for Windows x64 (Vulkan)",
@@ -1085,23 +879,6 @@
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win32-VK-Profile",
             "configuration": "RelWithDebInfo"
-        },
-
-        {
-            "name": "VS2019-Win64-VK-Scan",
-            "displayName": "Scan - VS2019 - Windows x64 (Vulkan)",
-            "description": "Scanning build with Visual Studio 2019 for Windows x64 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-VK-Scan",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2019-Win32-VK-Scan",
-            "displayName": "Scan - VS2019 - Windows x86 (Vulkan)",
-            "description": "Scanning build with Visual Studio 2019 for Windows x86 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-VK-Scan",
-            "configuration": "Debug"
         },
 
         {
@@ -1226,14 +1003,6 @@
             "configurePreset": "Ninja-Lin-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
-        {
-            "name": "Ninja-Lin-VK-Scan",
-            "displayName": "Scan - Ninja Multi-Config - Linux (Vulkan)",
-            "description": "Scanning build with Ninja Multi-Config for Linux (Vulkan)",
-            "inherits": [ "Linux-Build" ],
-            "configurePreset": "Ninja-Lin-VK-Scan",
-            "configuration": "Debug"
-        },
 
         {
             "name": "Make-Lin-VK-Debug",
@@ -1258,78 +1027,101 @@
         },
 
         {
-            "name": "Make-Lin-VK-Scan",
-            "displayName": "Scan - Unix Makefiles - Linux (Vulkan)",
-            "description": "Scanning build with Unix Makefiles for Linux (Vulkan)",
-            "inherits": [ "Linux-Build" ],
-            "configurePreset": "Make-Lin-VK-Scan"
-        },
-
-        {
-            "name": "Ninja-Mac-MTL-Debug",
-            "displayName": "Debug - Ninja Multi-Config - MacOS (Metal)",
-            "description": "Debug build with Ninja Multi-Config for MacOS (Metal)",
+            "name": "Ninja-Mac-Arm64-MTL-Debug",
+            "displayName": "Debug - Ninja Multi-Config - MacOS Arm64 (Metal)",
+            "description": "Debug build with Ninja Multi-Config for MacOS Arm64 (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Mac-MTL-Default",
+            "configurePreset": "Ninja-Mac-Arm64-MTL-Default",
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Mac-MTL-Release",
-            "displayName": "Release - Ninja Multi-Config - MacOS (Metal)",
-            "description": "Release build with Ninja Multi-Config for MacOS (Metal)",
+            "name": "Ninja-Mac-x86-64-MTL-Debug",
+            "displayName": "Debug - Ninja Multi-Config - MacOS x86_64 (Metal)",
+            "description": "Debug build with Ninja Multi-Config for MacOS x86_64 (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Mac-MTL-Default",
+            "configurePreset": "Ninja-Mac-x86-64-MTL-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Ninja-Mac-Arm64-MTL-Release",
+            "displayName": "Release - Ninja Multi-Config - MacOS Arm64 (Metal)",
+            "description": "Release build with Ninja Multi-Config for MacOS Arm64 (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Ninja-Mac-Arm64-MTL-Default",
             "configuration": "Release"
         },
         {
-            "name": "Ninja-Mac-MTL-Profile",
-            "displayName": "Profile - Ninja Multi-Config - MacOS (Metal)",
-            "description": "Profiling build with Ninja Multi-Config for MacOS (Metal)",
+            "name": "Ninja-Mac-x86-64-MTL-Release",
+            "displayName": "Release - Ninja Multi-Config - MacOS x86_64 (Metal)",
+            "description": "Release build with Ninja Multi-Config for MacOS x86_64 (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Mac-MTL-Profile",
-            "configuration": "RelWithDebInfo"
-        },
-        {
-            "name": "Ninja-Mac-MTL-Scan",
-            "displayName": "Scan - Ninja Multi-Config - MacOS (Metal)",
-            "description": "Scanning build with Ninja Multi-Config for MacOS (Metal)",
-            "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Mac-MTL-Scan",
-            "configuration": "Debug"
-        },
-
-        {
-            "name": "Xcode-Mac-MTL-Debug",
-            "displayName": "Debug - Xcode - MacOS (Metal)",
-            "description": "Debug build with Xcode for MacOS (Metal)",
-            "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Mac-MTL-Default",
-            "configuration": "Debug"
-        },
-        {
-            "name": "Xcode-Mac-MTL-Release",
-            "displayName": "Release - Xcode - MacOS (Metal)",
-            "description": "Release build with Xcode for MacOS (Metal)",
-            "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Mac-MTL-Default",
+            "configurePreset": "Ninja-Mac-x86-64-MTL-Default",
             "configuration": "Release"
         },
         {
-            "name": "Xcode-Mac-MTL-Profile",
-            "displayName": "Profile - Xcode - MacOS (Metal)",
-            "description": "Profiling build with Xcode for MacOS (Metal)",
+            "name": "Ninja-Mac-Arm64-MTL-Profile",
+            "displayName": "Profile - Ninja Multi-Config - MacOS Arm64 (Metal)",
+            "description": "Profiling build with Ninja Multi-Config for MacOS Arm64 (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Mac-MTL-Profile",
+            "configurePreset": "Ninja-Mac-Arm64-MTL-Profile",
             "configuration": "RelWithDebInfo"
         },
-        
         {
-            "name": "Xcode-Mac-MTL-Scan",
-            "displayName": "Scan - Xcode - MacOS (Metal)",
-            "description": "Scanning build with Xcode for MacOS (Metal)",
+            "name": "Ninja-Mac-x86-64-MTL-Profile",
+            "displayName": "Profile - Ninja Multi-Config - MacOS x86_64 (Metal)",
+            "description": "Profiling build with Ninja Multi-Config for MacOS x86_64 (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Mac-MTL-Scan",
+            "configurePreset": "Ninja-Mac-x86-64-MTL-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+
+        {
+            "name": "Xcode-Mac-Arm64-MTL-Debug",
+            "displayName": "Debug - Xcode - MacOS Arm64 (Metal)",
+            "description": "Debug build with Xcode for MacOS Arm64 (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-Arm64-MTL-Default",
             "configuration": "Debug"
+        },
+        {
+            "name": "Xcode-Mac-x86-64-MTL-Debug",
+            "displayName": "Debug - Xcode - MacOS x86_64 (Metal)",
+            "description": "Debug build with Xcode for MacOS x86_64 (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-x86-64-MTL-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Xcode-Mac-Arm64-MTL-Release",
+            "displayName": "Release - Xcode - MacOS Arm64 (Metal)",
+            "description": "Release build with Xcode for MacOS Arm64 (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-Arm64-MTL-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "Xcode-Mac-x86-64-MTL-Release",
+            "displayName": "Release - Xcode - MacOS x86_64 (Metal)",
+            "description": "Release build with Xcode for MacOS x86_64 (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-x86-64-MTL-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "Xcode-Mac-Arm64-MTL-Profile",
+            "displayName": "Profile - Xcode - MacOS Arm64 (Metal)",
+            "description": "Profiling build with Xcode for MacOS Arm64 (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-Arm64-MTL-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "Xcode-Mac-x86-64-MTL-Profile",
+            "displayName": "Profile - Xcode - MacOS x86_64 (Metal)",
+            "description": "Profiling build with Xcode for MacOS x86_64 (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-x86-64-MTL-Profile",
+            "configuration": "RelWithDebInfo"
         },
 
         {
