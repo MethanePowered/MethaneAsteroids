@@ -31,8 +31,8 @@
   sudo apt-get update && sudo apt-get install build-essential git cmake lcov xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev
   ```
 - **MacOS**
-  - MacOS 10.15 "Catalina" or later
-  - XCode 11 or later with command-line tools
+  - MacOS 13 "Ventura" or later
+  - XCode 14 or later with command-line tools
 - **iOS / tvOS**
   - All MacOS prerequisites from above
   - iOS or tvOS simulator for running app in virtual environment
@@ -122,13 +122,13 @@ Start Terminal, go to `MethaneAsteroids` root directory, generate XCode workspac
 
 ```console
 OUTPUT_DIR=Build/Output/XCode/macOS
-cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
+cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="[arm64|x86_64]" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
 cmake --build $OUTPUT_DIR/Build --config Release --target install
 ```
 
 Note that starting with XCode 12 and Clang 12 build architectures have to be specified explicitly
-using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` to build the fat binary.
-This option should be omitted with earlier versions of Clang on macOS.
+using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES="[arm64|x86_64]"` (multiple architecture are not supported by Asteroids sample)
+to build the fat binary. This option should be omitted with earlier versions of Clang on macOS.
 
 Auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) can make it more simple for you:
 
@@ -152,7 +152,7 @@ Start Terminal, go to `MethaneAsteroids` root directory, generate XCode workspac
 
 ```console
 OUTPUT_DIR=Build/Output/XCode/iOS
-cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_TOOLCHAIN_FILE="Externals/iOS-Toolchain.cmake" -DPLATFORM=[SIMULATORARM64|OS64|SIMULATOR_TVOS|TVOS] -DDEPLOYMENT_TARGET=15.0 -DENABLE_ARC:BOOL=ON [-DAPPLE_DEVELOPMENT_TEAM=12345X6ABC] -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
+cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_TOOLCHAIN_FILE="Externals/iOS-Toolchain.cmake" -DPLATFORM=[SIMULATORARM64|OS64|SIMULATOR_TVOS|TVOS] -DDEPLOYMENT_TARGET=16.0 -DENABLE_ARC:BOOL=ON [-DAPPLE_DEVELOPMENT_TEAM=12345X6ABC] -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
 cmake --build $OUTPUT_DIR/Build --config Release --target install -- -allowProvisioningUpdates
 ```
 

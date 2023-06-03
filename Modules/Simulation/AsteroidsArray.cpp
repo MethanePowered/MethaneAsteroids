@@ -23,7 +23,6 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 
 #include "AsteroidsArray.h"
 
-#include <PerlinNoise.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/ResourceView.h>
 #include <Methane/Graphics/RHI/Shader.h>
@@ -125,23 +124,30 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     std::mt19937 rng(settings.random_seed); // NOSONAR - using pseudorandom generator is safe here
 
     // Randomly generate perlin-noise textures
-    std::normal_distribution<float>       noise_persistence_distribution(0.9F, 0.2F);
+    std::uniform_real_distribution<float> noise_gain_distribution(0.2F, 0.8F);
+    std::uniform_real_distribution<float> noise_fractal_distribution(0.3F, 0.7F);
+    std::uniform_real_distribution<float> noise_lacunarity_distribution(1.5F, 2.5F);
     std::uniform_real_distribution<float> noise_scale_distribution(0.05F, 0.1F);
+    std::uniform_real_distribution<float> noise_strength_distribution(0.8F, 1.0F);
 
     texture_array_subresources.resize(settings.textures_count);
     tf::Taskflow task_flow;
     task_flow.for_each(texture_array_subresources.begin(), texture_array_subresources.end(),
-        [&rng, &noise_persistence_distribution, &noise_scale_distribution, &settings](rhi::SubResources& sub_resources)
+        [&rng, &noise_gain_distribution, &noise_fractal_distribution, &noise_lacunarity_distribution,
+         &noise_scale_distribution, &noise_strength_distribution, &settings]
+        (rhi::SubResources& sub_resources)
         {
-            Asteroid::TextureNoiseParameters noise_parameters{
-                static_cast<uint32_t>(rng()), //NOSONAR
-                noise_persistence_distribution(rng),
-                noise_scale_distribution(rng),
-                1.5F
-            };
-            sub_resources = Asteroid::GenerateTextureArraySubResources(settings.texture_dimensions, 3, noise_parameters);
-        }
-    );
+            sub_resources = Asteroid::GenerateTextureArraySubResources(settings.texture_dimensions, 3U,
+                Asteroid::TextureNoiseParameters
+                {
+                    static_cast<int>(rng()),
+                    noise_gain_distribution(rng),
+                    noise_fractal_distribution(rng),
+                    noise_lacunarity_distribution(rng),
+                    noise_scale_distribution(rng),
+                    noise_strength_distribution(rng)
+                });
+        });
     parallel_executor.run(task_flow).get();
 
     // Randomly distribute textures between uber-mesh subsets
@@ -278,7 +284,7 @@ AsteroidsArray::AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
             rhi::TextureSettings::ForImage(m_settings.texture_dimensions,
                                            static_cast<uint32_t>(texture_subresources.size()),
                                            gfx::PixelFormat::RGBA8Unorm, true)));
-        m_unique_textures.back().SetData(texture_subresources, m_render_cmd_queue);
+        m_unique_textures.back().SetData(m_render_cmd_queue, texture_subresources);
         m_unique_textures.back().SetName(fmt::format("Asteroid Texture {:d}", texture_index));
         texture_index++;
     }
@@ -381,7 +387,7 @@ void AsteroidsArray::Draw(const rhi::RenderCommandList& cmd_list,
 
     // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
     auto uniforms_update_future = std::async([this, &buffer_bindings]() {
-        buffer_bindings.uniforms_buffer.SetData(GetFinalPassUniformsSubresources(), m_render_cmd_queue);
+        buffer_bindings.uniforms_buffer.SetData(m_render_cmd_queue, GetFinalPassUniformsSubresource());
     });
 
     META_DEBUG_GROUP_VAR(s_debug_group, "Asteroids rendering");
@@ -412,7 +418,7 @@ void AsteroidsArray::DrawParallel(const rhi::ParallelRenderCommandList& parallel
 
     // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
     auto uniforms_update_future = std::async([this, &buffer_bindings]() {
-        buffer_bindings.uniforms_buffer.SetData(GetFinalPassUniformsSubresources(), m_render_cmd_queue);
+        buffer_bindings.uniforms_buffer.SetData(m_render_cmd_queue, GetFinalPassUniformsSubresource());
     });
 
     META_DEBUG_GROUP_VAR(s_debug_group, "Parallel Asteroids rendering");

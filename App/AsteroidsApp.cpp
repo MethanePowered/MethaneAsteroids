@@ -306,10 +306,10 @@ void AsteroidsApp::Init()
     // Create constants buffer for frame rendering
     m_const_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(constants_data_size));
     m_const_buffer.SetName("Constants Buffer");
-    m_const_buffer.SetData(
-        { { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }, // NOSONAR
-        render_cmd_queue
-    );
+    m_const_buffer.SetData(render_cmd_queue, {
+        reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants),
+        sizeof(m_scene_constants)
+    });
 
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : GetFrames())
@@ -436,7 +436,7 @@ bool AsteroidsApp::Render()
     // Upload uniform buffers to GPU
     const AsteroidsFrame& frame = GetCurrentFrame();
     rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.scene_uniforms_buffer.SetData(m_scene_uniforms_subresources, render_cmd_queue);
+    frame.scene_uniforms_buffer.SetData(render_cmd_queue, m_scene_uniforms_subresource);
 
     // Asteroids rendering in parallel or in main thread
     if (m_is_parallel_rendering_enabled)

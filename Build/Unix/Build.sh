@@ -9,12 +9,13 @@
 
 BUILD_VERSION_MAJOR=0
 BUILD_VERSION_MINOR=7
-BUILD_VERSION=$BUILD_VERSION_MAJOR.$BUILD_VERSION_MINOR
+BUILD_VERSION_PATCH=2
+BUILD_VERSION=$BUILD_VERSION_MAJOR.$BUILD_VERSION_MINOR.$BUILD_VERSION_PATCH
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 SOURCE_DIR=$SCRIPT_DIR/../..
 OUTPUT_DIR=$SCRIPT_DIR/../Output
-APPLE_DEPLOYMENT_TARGET="15.0"
+PRECOMPILED_HEADERS_ENABLED="ON"
 
 # Parse command line arguments
 while [ $# -ne 0 ]
@@ -54,7 +55,7 @@ done
 # Choose CMake generator depending on operating system
 ARCH_NAME="$(uname -m)"
 OS_NAME="$(uname -s)"
-case "${OS_NAME}" in
+case "$OS_NAME" in
     Linux*)
         CMAKE_GENERATOR=Unix\ Makefiles
         PLATFORM_NAME=Linux
@@ -62,28 +63,40 @@ case "${OS_NAME}" in
     Darwin*)
         CMAKE_GENERATOR=Xcode
         PLATFORM_NAME=MacOS
-        if [ "$APPLE_PLATFORM" != "" ]; then
-            # Disable tests cause unbundled console executables can not be built with iOS toolchain
-            TESTS_BUILD_ENABLED="OFF"
-            CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$SOURCE_DIR/Externals/iOS-Toolchain.cmake \
-                         -DPLATFORM=$APPLE_PLATFORM \
-                         -DDEPLOYMENT_TARGET=$APPLE_DEPLOYMENT_TARGET \
-                         -DENABLE_ARC:BOOL=ON \
-                         -DENABLE_VISIBILITY:BOOL=ON \
-                         -DENABLE_BITCODE:BOOL=OFF \
-                         -DENABLE_STRICT_TRY_COMPILE:BOOL=OFF"
-            if [ "$APPLE_DEVELOPMENT_TEAM" != "" ]; then
-                CMAKE_FLAGS="$CMAKE_FLAGS \
-                         -DAPPLE_DEVELOPMENT_TEAM=${APPLE_DEVELOPMENT_TEAM}"
-                CMAKE_BUID_OPTIONS="-- -allowProvisioningUpdates"
+        PRECOMPILED_HEADERS_ENABLED="OFF"
+        if [ "$APPLE_PLATFORM" == "" ]; then
+            case "$ARCH_NAME" in
+                arm64*)
+                    APPLE_PLATFORM=MAC_ARM64
+                    ;;
+                *)
+                    APPLE_PLATFORM=MAC
+                    ;;
+            esac
+        fi
+        if [ "$APPLE_DEPLOYMENT_TARGET" == "" ]; then
+            if [[ "$APPLE_PLATFORM" =~ ^MAC.*$ ]]; then
+                APPLE_DEPLOYMENT_TARGET="13.0"
+            else
+                APPLE_DEPLOYMENT_TARGET="16.0"
             fi
-        else
-            APPLE_PLATFORM=MacOS_$ARCH_NAME
+        fi
+        CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$SOURCE_DIR/Externals/iOS-Toolchain.cmake \
+                     -DPLATFORM=$APPLE_PLATFORM \
+                     -DDEPLOYMENT_TARGET=$APPLE_DEPLOYMENT_TARGET \
+                     -DENABLE_ARC:BOOL=ON \
+                     -DENABLE_VISIBILITY:BOOL=ON \
+                     -DENABLE_BITCODE:BOOL=OFF \
+                     -DENABLE_STRICT_TRY_COMPILE:BOOL=OFF"
+        if [ "$APPLE_DEVELOPMENT_TEAM" != "" ]; then
+            CMAKE_FLAGS="$CMAKE_FLAGS \
+                     -DAPPLE_DEVELOPMENT_TEAM=${APPLE_DEVELOPMENT_TEAM}"
+            CMAKE_BUID_OPTIONS="-- -allowProvisioningUpdates"
         fi
         ;;
     *)
-    echo "Unsupported operating system!" 1>&2 && exit 1
-    ;;
+        echo "Unsupported operating system!" 1>&2 && exit 1
+        ;;
 esac
 
 if [ "$IS_DEBUG_BUILD" == true ]; then
@@ -124,10 +137,11 @@ fi
 CMAKE_FLAGS="$CMAKE_FLAGS \
     -DMETHANE_VERSION_MAJOR=$BUILD_VERSION_MAJOR \
     -DMETHANE_VERSION_MINOR=$BUILD_VERSION_MINOR \
+    -DMETHANE_VERSION_PATCH=$BUILD_VERSION_PATCH \
     -DMETHANE_GFX_VULKAN_ENABLED:BOOL=$VULKAN_BUILD_FLAG \
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON \
     -DMETHANE_RHI_PIMPL_INLINE_ENABLED:BOOL=ON \
-    -DMETHANE_PRECOMPILED_HEADERS_ENABLED:BOOL=ON \
+    -DMETHANE_PRECOMPILED_HEADERS_ENABLED:BOOL=$PRECOMPILED_HEADERS_ENABLED \
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF \
     -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON \
     -DMETHANE_LOGGING_ENABLED:BOOL=OFF \

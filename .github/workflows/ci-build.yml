@@ -29,9 +29,9 @@ on:
 env:
   product_ver_major: 0
   product_ver_minor: 7
-  product_ver_patch: 1
+  product_ver_patch: 2
   product_ver_build: ${{ github.run_number }}
-  tracy_release_version: "0.9"
+  tracy_release_version: "0.9.1"
 
 jobs:
   build-asteroids:
@@ -113,16 +113,30 @@ jobs:
 
           - os: macos-latest
             os_name: MacOS
-            name: "MacOS_MTL_Release"
-            config_preset: "Xcode-Mac-MTL-Default"
-            build_preset: "Xcode-Mac-MTL-Release"
+            name: "MacOS_Arm64_MTL_Release"
+            config_preset: "Xcode-Mac-Arm64-MTL-Default"
+            build_preset: "Xcode-Mac-Arm64-MTL-Release"
             add_tracy_app: false
 
           - os: macos-latest
             os_name: MacOS
-            name: "MacOS_MTL_Profile"
-            config_preset: "Xcode-Mac-MTL-Profile"
-            build_preset: "Xcode-Mac-MTL-Profile"
+            name: "MacOS_Arm64_MTL_Profile"
+            config_preset: "Xcode-Mac-Arm64-MTL-Profile"
+            build_preset: "Xcode-Mac-Arm64-MTL-Profile"
+            add_tracy_app: true
+
+          - os: macos-latest
+            os_name: MacOS
+            name: "MacOS_x86-64_MTL_Release"
+            config_preset: "Xcode-Mac-x86-64-MTL-Default"
+            build_preset: "Xcode-Mac-x86-64-MTL-Release"
+            add_tracy_app: false
+
+          - os: macos-latest
+            os_name: MacOS
+            name: "MacOS_x86-64_MTL_Profile"
+            config_preset: "Xcode-Mac-x86-64-MTL-Profile"
+            build_preset: "Xcode-Mac-x86-64-MTL-Profile"
             add_tracy_app: true
 
           - os: macos-latest

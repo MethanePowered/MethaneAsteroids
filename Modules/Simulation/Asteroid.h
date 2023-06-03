@@ -98,10 +98,12 @@ public:
 
     struct TextureNoiseParameters
     {
-        uint32_t random_seed = 0;
-        float    persistence = 0.9F;
-        float    scale       = 0.5F;
-        float    strength    = 1.5F;
+        int   random_seed    = 0;
+        float gain           = 0.5F;
+        float fractal_weight = 0.5F;
+        float lacunarity     = 2.0F;
+        float scale          = 0.5F;
+        float strength       = 0.8F;
     };
 
     explicit Asteroid(const rhi::RenderContext& render_context, const rhi::CommandQueue& render_cmd_queue);
@@ -111,8 +113,8 @@ public:
                                              const gfx::Dimensions& dimensions,
                                              uint32_t array_size, bool mipmapped,
                                              const TextureNoiseParameters& noise_parameters);
-    static rhi::SubResources GenerateTextureArraySubResources(const gfx::Dimensions& dimensions,
-                                                              uint32_t array_size,
+
+    static rhi::SubResources GenerateTextureArraySubResources(const gfx::Dimensions& dimensions, uint32_t array_size,
                                                               const TextureNoiseParameters& noise_parameters);
 
     static constexpr size_t color_schema_size = 6U;
@@ -122,7 +124,7 @@ public:
     
 private:
     static void FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Dimensions& dimensions, uint32_t row_stride,
-                                         float random_seed, float persistence, float noise_scale, float noise_strength);
+                                         const TextureNoiseParameters& noise_parameters);
 };
 
 } // namespace Methane::Samples
