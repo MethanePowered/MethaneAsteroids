@@ -339,6 +339,7 @@ std::vector<rhi::ProgramBindings> AsteroidsArray::CreateProgramBindings(const rh
     task_flow.for_each_index(1U, m_settings.instance_count, 1U,
         [this, &program_bindings_array, &asteroids_uniforms_buffer, uniform_data_size, frame_index](const uint32_t asteroid_index)
         {
+            META_UNUSED(uniform_data_size); // workaround for Clang error unused-lambda-capture uniform_data_size (false positive)
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
             META_CHECK_ARG_EQUAL(asteroid_uniform_offset % 256, 0);
             rhi::ProgramBindings::ResourceViewsByArgument set_resource_view_by_argument{
