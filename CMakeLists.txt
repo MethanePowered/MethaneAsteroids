@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21.0)
 # Methane version, build & product info
 set(ASTEROIDS_VERSION_MAJOR 0 CACHE STRING "Asteroids major version")
 set(ASTEROIDS_VERSION_MINOR 7 CACHE STRING "Asteroids minor version")
-set(ASTEROIDS_VERSION_PATCH 2 CACHE STRING "Asteroids patch version")
+set(ASTEROIDS_VERSION_PATCH 3 CACHE STRING "Asteroids patch version")
 set(ASTEROIDS_VERSION_BUILD 0 CACHE STRING "Asteroids build version")
 
 project(METHANE_ASTEROIDS

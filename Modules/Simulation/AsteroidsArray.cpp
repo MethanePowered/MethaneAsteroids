@@ -33,6 +33,7 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <taskflow/algorithm/for_each.hpp>
 #include <future>
 #include <cmath>
 
@@ -319,7 +320,7 @@ std::vector<rhi::ProgramBindings> AsteroidsArray::CreateProgramBindings(const rh
     if (m_settings.instance_count == 0)
         return program_bindings_array;
 
-    const Data::Size uniform_data_size = MeshBuffers::GetAlignedUniformSize();
+    const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
     const rhi::ResourceViews face_texture_locations = m_settings.textures_array_enabled
                                                     ? rhi::CreateResourceViews(m_unique_textures)
                                                     : rhi::CreateResourceViews(GetInstanceTexture());

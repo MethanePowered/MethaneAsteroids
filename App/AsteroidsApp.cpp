@@ -320,17 +320,17 @@ void AsteroidsApp::Init()
         // Create parallel command list for asteroids rendering
         frame.parallel_cmd_list = rhi::ParallelRenderCommandList(context.GetRenderCommandKit().GetQueue(), frame.asteroids_pass);
         frame.parallel_cmd_list.SetParallelCommandListsCount(std::thread::hardware_concurrency());
-        frame.parallel_cmd_list.SetName(IndexedName("Parallel Rendering", frame.index));
+        frame.parallel_cmd_list.SetName(fmt::format("Parallel Rendering {}", frame.index));
         frame.parallel_cmd_list.SetValidationEnabled(false);
 
         // Create serial command list for asteroids rendering
         frame.serial_cmd_list = rhi::RenderCommandList(context.GetRenderCommandKit().GetQueue(), frame.asteroids_pass);
-        frame.serial_cmd_list.SetName(IndexedName("Serial Rendering", frame.index));
+        frame.serial_cmd_list.SetName(fmt::format("Serial Rendering {}", frame.index));
         frame.serial_cmd_list.SetValidationEnabled(false);
 
         // Create final command list for sky-box and planet rendering
         frame.final_cmd_list = rhi::RenderCommandList(context.GetRenderCommandKit().GetQueue(), frame.screen_pass);
-        frame.final_cmd_list.SetName(IndexedName("Final Rendering", frame.index));
+        frame.final_cmd_list.SetName(fmt::format("Final Rendering {}", frame.index));
         frame.final_cmd_list.SetValidationEnabled(false);
 
         // Rendering command lists sequence
@@ -338,27 +338,28 @@ void AsteroidsApp::Init()
 
         // Create uniforms buffer with volatile parameters for the whole scene rendering
         frame.scene_uniforms_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(scene_uniforms_data_size, false, true));
-        frame.scene_uniforms_buffer.SetName(IndexedName("Scene Uniforms Buffer", frame.index));
+        frame.scene_uniforms_buffer.SetName(fmt::format("Scene Uniforms Buffer {}", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
         frame.sky_box.uniforms_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(gfx::SkyBox::GetUniformsSize(), false, true));
-        frame.sky_box.uniforms_buffer.SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
+        frame.sky_box.uniforms_buffer.SetName(fmt::format("Sky-box Uniforms Buffer {}", frame.index));
 
         // Create uniforms buffer for Planet rendering
         frame.planet.uniforms_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(sizeof(hlslpp::PlanetUniforms), false, true));
-        frame.planet.uniforms_buffer.SetName(IndexedName("Planet Uniforms Buffer", frame.index));
+        frame.planet.uniforms_buffer.SetName(fmt::format("Planet Uniforms Buffer {}", frame.index));
 
         // Create uniforms buffer for Asteroids array rendering
         frame.asteroids.uniforms_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(asteroid_uniforms_data_size, true, true));
-        frame.asteroids.uniforms_buffer.SetName(IndexedName("Asteroids Array Uniforms Buffer", frame.index));
+        frame.asteroids.uniforms_buffer.SetName(fmt::format("Asteroids Array Uniforms Buffer {}", frame.index));
 
         // Resource bindings for Sky-Box rendering
         frame.sky_box.program_bindings = m_sky_box.CreateProgramBindings(frame.sky_box.uniforms_buffer, frame.index);
-        frame.sky_box.program_bindings.SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
+        frame.sky_box.program_bindings.SetName(fmt::format("Space Sky-Box Bindings {}", frame.index));
 
         // Resource bindings for Planet rendering
         frame.planet.program_bindings = m_planet_ptr->CreateProgramBindings(m_const_buffer, frame.planet.uniforms_buffer, frame.index);
-        frame.planet.program_bindings.SetName(IndexedName("Planet Bindings {}", frame.index));
+        frame.planet.program_bindings.SetName(fmt::format("Planet Bindings {}", frame.index));
+
 
         // Resource bindings for Asteroids rendering
         frame.asteroids.program_bindings_per_instance = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer,
