@@ -540,6 +540,53 @@
         },
 
         {
+            "name": "Ninja-Mac-Arm64-VK-Default",
+            "displayName": "Default - Ninja Multi-Config - MacOS Arm64 (Vulkan)",
+            "description": "Default configuration using Ninja Multi-Config generator for MacOS Arm64 (Vulkan)",
+            "inherits": [
+                "Ninja-Mac-Arm64-Default"
+            ],
+            "cacheVariables": {
+                "METHANE_GFX_VULKAN_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "Xcode-Mac-Arm64-VK-Default",
+            "displayName": "Default - Xcode - MacOS Arm64 (Vulkan)",
+            "description": "Default configuration using Xcode generator for MacOS Arm64 (Vulkan)",
+            "generator": "Xcode",
+            "inherits": [
+                "Ninja-Mac-Arm64-VK-Default"
+            ]
+        },
+        {
+            "name": "Ninja-Mac-x86-64-VK-Default",
+            "displayName": "Default - Ninja Multi-Config - MacOS x86_64 (Vulkan)",
+            "description": "Default configuration using Ninja Multi-Config generator for MacOS x86_64 (Vulkan)",
+            "inherits": [
+                "Ninja-Mac-x86-64-Default"
+            ],
+            "cacheVariables": {
+                "METHANE_GFX_VULKAN_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "Xcode-Mac-x86-64-VK-Default",
+            "displayName": "Default - Xcode - MacOS x86_64 (Vulkan)",
+            "description": "Default configuration using Xcode generator for MacOS x86_64 (Vulkan)",
+            "generator": "Xcode",
+            "inherits": [
+                "Ninja-Mac-x86-64-VK-Default"
+            ]
+        },
+
+        {
             "name": "Ninja-Mac-Arm64-MTL-Default",
             "displayName": "Default - Ninja Multi-Config - MacOS Arm64 (Metal)",
             "description": "Default configuration using Ninja Multi-Config generator for MacOS Arm64 (Metal)",
@@ -1028,6 +1075,72 @@
             "description": "Profiling build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
             "configurePreset": "Make-Lin-VK-Profile"
+        },
+
+        {
+            "name": "Ninja-Mac-Arm64-VK-Debug",
+            "displayName": "Debug - Ninja Multi-Config - MacOS Arm64 (Vulkan)",
+            "description": "Debug build with Ninja Multi-Config for MacOS Arm64 (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Ninja-Mac-Arm64-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Ninja-Mac-Arm64-VK-Release",
+            "displayName": "Release - Ninja Multi-Config - MacOS Arm64 (Vulkan)",
+            "description": "Release build with Ninja Multi-Config for MacOS Arm64 (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Ninja-Mac-Arm64-VK-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "Xcode-Mac-Arm64-VK-Debug",
+            "displayName": "Debug - Xcode - MacOS Arm64 (Vulkan)",
+            "description": "Debug build with Xcode for MacOS Arm64 (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-Arm64-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Xcode-Mac-Arm64-VK-Release",
+            "displayName": "Release - Xcode - MacOS Arm64 (Vulkan)",
+            "description": "Release build with Xcode for MacOS Arm64 (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-Arm64-VK-Default",
+            "configuration": "Release"
+        },
+
+        {
+            "name": "Ninja-Mac-x86-64-VK-Debug",
+            "displayName": "Debug - Ninja Multi-Config - MacOS x86_64 (Vulkan)",
+            "description": "Debug build with Ninja Multi-Config for MacOS x86_64 (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Ninja-Mac-x86-64-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Ninja-Mac-x86-64-VK-Release",
+            "displayName": "Release - Ninja Multi-Config - MacOS x86_64 (Vulkan)",
+            "description": "Release build with Ninja Multi-Config for MacOS x86_64 (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Ninja-Mac-x86-64-VK-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "Xcode-Mac-x86-64-VK-Debug",
+            "displayName": "Debug - Xcode - MacOS x86_64 (Vulkan)",
+            "description": "Debug build with Xcode for MacOS x86_64 (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-x86-64-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Xcode-Mac-x86-64-VK-Release",
+            "displayName": "Release - Xcode - MacOS x86_64 (Vulkan)",
+            "description": "Release build with Xcode for MacOS x86_64 (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-x86-64-VK-Default",
+            "configuration": "Release"
         },
 
         {

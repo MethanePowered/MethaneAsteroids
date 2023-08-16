@@ -141,6 +141,20 @@ jobs:
 
           - os: macos-latest
             os_name: MacOS
+            name: "MacOS_Arm64_VK_Release"
+            config_preset: "Xcode-Mac-Arm64-VK-Default"
+            build_preset: "Xcode-Mac-Arm64-VK-Release"
+            add_tracy_app: false
+
+          - os: macos-latest
+            os_name: MacOS
+            name: "MacOS_x86-64_VK_Release"
+            config_preset: "Xcode-Mac-x86-64-VK-Default"
+            build_preset: "Xcode-Mac-x86-64-VK-Release"
+            add_tracy_app: false
+
+          - os: macos-latest
+            os_name: MacOS
             name: "iOS_Sim_MTL_Release"
             config_preset: "Xcode-iOS-Sim-MTL-Default"
             build_preset: "Xcode-iOS-Sim-MTL-Release"
