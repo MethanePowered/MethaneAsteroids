@@ -23,8 +23,8 @@ on:
     - 'CMake/**'
     - 'CMakeLists.txt'
     - 'CMakePresets.json'
-  schedule:
-    - cron: '20 23 * * 3'
+
+# Do not schedule workflow with "cron", so that it could run in GitHub forks (scheduled workflows are disabled in forks)
 
 env:
   product_ver_major: 0
@@ -32,6 +32,7 @@ env:
   product_ver_patch: 3
   product_ver_build: ${{ github.run_number }}
   tracy_release_version: "0.9.1"
+  vulkan_sdk_version: "1.3.250.1"
 
 jobs:
   build-asteroids:
@@ -47,6 +48,7 @@ jobs:
             config_preset: "VS2022-Win64-DX-Default"
             build_preset: "VS2022-Win64-DX-Release"
             add_tracy_app: false
+            install_vulkan_sdk: false
 
           - os: windows-latest
             os_name: Windows
@@ -54,6 +56,7 @@ jobs:
             config_preset: "VS2022-Win64-VK-Default"
             build_preset: "VS2022-Win64-VK-Release"
             add_tracy_app: false
+            install_vulkan_sdk: false
 
           - os: windows-latest
             os_name: Windows
@@ -61,6 +64,7 @@ jobs:
             config_preset: "VS2022-Win64-DX-Profile"
             build_preset: "VS2022-Win64-DX-Profile"
             add_tracy_app: true
+            install_vulkan_sdk: false
 
           - os: windows-latest
             os_name: Windows
@@ -68,6 +72,7 @@ jobs:
             config_preset: "VS2022-Win64-VK-Profile"
             build_preset: "VS2022-Win64-VK-Profile"
             add_tracy_app: true
+            install_vulkan_sdk: false
 
           - os: windows-latest
             os_name: Windows
@@ -75,6 +80,7 @@ jobs:
             config_preset: "VS2022-Win32-DX-Default"
             build_preset: "VS2022-Win32-DX-Release"
             add_tracy_app: false
+            install_vulkan_sdk: false
 
           - os: windows-latest
             os_name: Windows
@@ -82,6 +88,7 @@ jobs:
             config_preset: "VS2022-Win32-VK-Default"
             build_preset: "VS2022-Win32-VK-Release"
             add_tracy_app: false
+            install_vulkan_sdk: false
 
           - os: windows-latest
             os_name: Windows
@@ -89,6 +96,7 @@ jobs:
             config_preset: "VS2022-Win32-DX-Profile"
             build_preset: "VS2022-Win32-DX-Profile"
             add_tracy_app: true
+            install_vulkan_sdk: false
 
           - os: windows-latest
             os_name: Windows
@@ -96,6 +104,7 @@ jobs:
             config_preset: "VS2022-Win32-VK-Profile"
             build_preset: "VS2022-Win32-VK-Profile"
             add_tracy_app: true
+            install_vulkan_sdk: false
 
           - os: ubuntu-latest
             os_name: Ubuntu
@@ -103,6 +112,7 @@ jobs:
             config_preset: "Make-Lin-VK-Release"
             build_preset: "Make-Lin-VK-Release"
             add_tracy_app: false
+            install_vulkan_sdk: false
 
           - os: ubuntu-latest
             os_name: Ubuntu
@@ -110,34 +120,7 @@ jobs:
             config_preset: "Make-Lin-VK-Profile"
             build_preset: "Make-Lin-VK-Profile"
             add_tracy_app: true
-
-          - os: macos-latest
-            os_name: MacOS
-            name: "MacOS_Arm64_MTL_Release"
-            config_preset: "Xcode-Mac-Arm64-MTL-Default"
-            build_preset: "Xcode-Mac-Arm64-MTL-Release"
-            add_tracy_app: false
-
-          - os: macos-latest
-            os_name: MacOS
-            name: "MacOS_Arm64_MTL_Profile"
-            config_preset: "Xcode-Mac-Arm64-MTL-Profile"
-            build_preset: "Xcode-Mac-Arm64-MTL-Profile"
-            add_tracy_app: true
-
-          - os: macos-latest
-            os_name: MacOS
-            name: "MacOS_x86-64_MTL_Release"
-            config_preset: "Xcode-Mac-x86-64-MTL-Default"
-            build_preset: "Xcode-Mac-x86-64-MTL-Release"
-            add_tracy_app: false
-
-          - os: macos-latest
-            os_name: MacOS
-            name: "MacOS_x86-64_MTL_Profile"
-            config_preset: "Xcode-Mac-x86-64-MTL-Profile"
-            build_preset: "Xcode-Mac-x86-64-MTL-Profile"
-            add_tracy_app: true
+            install_vulkan_sdk: false
 
           - os: macos-latest
             os_name: MacOS
@@ -145,6 +128,7 @@ jobs:
             config_preset: "Xcode-Mac-Arm64-VK-Default"
             build_preset: "Xcode-Mac-Arm64-VK-Release"
             add_tracy_app: false
+            install_vulkan_sdk: true
 
           - os: macos-latest
             os_name: MacOS
@@ -152,6 +136,39 @@ jobs:
             config_preset: "Xcode-Mac-x86-64-VK-Default"
             build_preset: "Xcode-Mac-x86-64-VK-Release"
             add_tracy_app: false
+            install_vulkan_sdk: true
+
+          - os: macos-latest
+            os_name: MacOS
+            name: "MacOS_Arm64_MTL_Release"
+            config_preset: "Xcode-Mac-Arm64-MTL-Default"
+            build_preset: "Xcode-Mac-Arm64-MTL-Release"
+            add_tracy_app: false
+            install_vulkan_sdk: false
+
+          - os: macos-latest
+            os_name: MacOS
+            name: "MacOS_Arm64_MTL_Profile"
+            config_preset: "Xcode-Mac-Arm64-MTL-Profile"
+            build_preset: "Xcode-Mac-Arm64-MTL-Profile"
+            add_tracy_app: true
+            install_vulkan_sdk: false
+
+          - os: macos-latest
+            os_name: MacOS
+            name: "MacOS_x86-64_MTL_Release"
+            config_preset: "Xcode-Mac-x86-64-MTL-Default"
+            build_preset: "Xcode-Mac-x86-64-MTL-Release"
+            add_tracy_app: false
+            install_vulkan_sdk: false
+
+          - os: macos-latest
+            os_name: MacOS
+            name: "MacOS_x86-64_MTL_Profile"
+            config_preset: "Xcode-Mac-x86-64-MTL-Profile"
+            build_preset: "Xcode-Mac-x86-64-MTL-Profile"
+            add_tracy_app: true
+            install_vulkan_sdk: false
 
           - os: macos-latest
             os_name: MacOS
@@ -159,6 +176,7 @@ jobs:
             config_preset: "Xcode-iOS-Sim-MTL-Default"
             build_preset: "Xcode-iOS-Sim-MTL-Release"
             add_tracy_app: false
+            install_vulkan_sdk: false
 
           - os: macos-latest
             os_name: MacOS
@@ -166,6 +184,7 @@ jobs:
             config_preset: "Xcode-tvOS-Sim-MTL-Default"
             build_preset: "Xcode-tvOS-Sim-MTL-Release"
             add_tracy_app: false
+            install_vulkan_sdk: false
 
     runs-on: ${{ matrix.os }}
 
@@ -178,6 +197,40 @@ jobs:
     - name: Install Linux prerequisites
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev p7zip
+
+    - name: Install Vulkan SDK ${{ env.vulkan_sdk_version }}
+      if: ${{ matrix.install_vulkan_sdk }}
+      run: |
+        runner_os=$(uname -s)
+        case $runner_os in
+          macOS|Darwin) sdk_os=mac ; sdk_os_subdir=macOS ;;
+          Linux) sdk_os=linux ; sdk_os_subdir=linux ;;
+          Windows|MINGW*) sdk_os=windows ; sdk_os_subdir=windows ;;
+          *) echo "Unknown runner_os: $runner_os" ; exit 7 ; ;;
+        esac
+        sdk_ver="${{ env.vulkan_sdk_version }}"
+        sdk_dir="${{ runner.tool_cache }}/VulkanSDK"
+        sdk_ver_dir="$sdk_dir/$sdk_ver/$sdk_os_subdir"
+        if [ -d "$sdk_ver_dir" ]; then
+          echo "Vulkan SDK version directory already exists: $sdk_ver_dir"
+        else
+          test -d $sdk_dir || mkdir -pv $sdk_dir
+          vulkan_sdk_url=https://github.com/MethanePowered/VulkanHeaders/releases/download/sdk-$sdk_ver/vulkan_sdk_$sdk_os.7z
+          echo "Downloading Vulkan SDK archive $vulkan_sdk_url ..."
+          curl -sSLo vulkan_sdk.7z $vulkan_sdk_url
+          echo "Unpacking Vulkan SDK archive to $sdk_dir ..."
+          7z x vulkan_sdk.7z -o$sdk_dir
+          if [ ! -d $sdk_ver_dir ]; then
+            echo "Vulkan SDK subdirectory not found: $sdk_ver_dir"
+            exit 7
+          fi
+        fi
+        echo "Setting VULKAN_SDK* environment variables..."
+        echo "VULKAN_SDK=$sdk_ver_dir" >> $GITHUB_ENV
+        echo "VULKAN_SDK_VERSION=$sdk_ver" >> $GITHUB_ENV
+        echo "VULKAN_SDK_PLATFORM=$sdk_os" >> $GITHUB_ENV
+        echo "PATH=$PATH:$sdk_ver_dir/bin" >> $GITHUB_ENV
+        echo "DYLD_LIBRARY_PATH=$sdk_ver_dir/lib:${DYLD_LIBRARY_PATH:-}" >> $GITHUB_ENV
 
     - name: Checkout repository
       uses: actions/checkout@v3
