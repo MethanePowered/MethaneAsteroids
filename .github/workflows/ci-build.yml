@@ -234,11 +234,11 @@ jobs:
         echo "DYLD_LIBRARY_PATH=$sdk_ver_dir/lib:${DYLD_LIBRARY_PATH:-}" >> $GITHUB_ENV
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Initialize Externals Cache
       id: cache-externals
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env:
         cache-name: cache-externals
       with:
@@ -290,7 +290,7 @@ jobs:
       run: 7z a -t7z -mx=9 MethaneAsteroids_${{ matrix.name }}.7z -r- ./*.* Apps/*
 
     - name: Upload Archived Build Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: MethaneAsteroids_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
         path: ${{ env.INSTALL_DIR }}/MethaneAsteroids_${{ matrix.name }}.7z
