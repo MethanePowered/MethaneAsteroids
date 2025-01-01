@@ -2,20 +2,24 @@
 # Run Build.sh with optional arguments:
 #   --apple-platform PLATFORM - Apple platform name (MacOS - by default, OS64 - iOS, SIMULATORARM64 - iOS Sim, TVOS, SIMULATOR_TVOS, ...)
 #   --apple-dev-team TEAM_ID  - Apple development team id used for code signing (required for iOS platforms)
-#   --apple-deploy-target X.Y - minimum version of Apple OS deployment target (15.0 by default)
+#   --apple-deploy-target X.Y - minimum version of Apple OS deployment target (16.0 by default)
 #   --debug                   - Debug build instead of Release build by default
 #   --vulkan VULKAN_SDK       - use Vulkan graphics API via Vulkan SDK path (~/VulkanSDK/1.2.182.0/macOS) instead of Metal on MacOS by default
 #   --graphviz                - enable GraphViz cmake module diagrams generation in Dot and Png formats
 
 BUILD_VERSION_MAJOR=0
-BUILD_VERSION_MINOR=7
-BUILD_VERSION_PATCH=3
+BUILD_VERSION_MINOR=8
+BUILD_VERSION_PATCH=0
 BUILD_VERSION=$BUILD_VERSION_MAJOR.$BUILD_VERSION_MINOR.$BUILD_VERSION_PATCH
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 SOURCE_DIR=$SCRIPT_DIR/../..
 OUTPUT_DIR=$SCRIPT_DIR/../Output
+
+APPS_BUILD_ENABLED="ON"
+TESTS_BUILD_ENABLED="ON"
 PRECOMPILED_HEADERS_ENABLED="ON"
+APPLE_DEPLOYMENT_TARGET="16.0"
 
 # Parse command line arguments
 while [ $# -ne 0 ]
@@ -55,7 +59,7 @@ done
 # Choose CMake generator depending on operating system
 ARCH_NAME="$(uname -m)"
 OS_NAME="$(uname -s)"
-case "$OS_NAME" in
+case "${OS_NAME}" in
     Linux*)
         CMAKE_GENERATOR=Unix\ Makefiles
         PLATFORM_NAME=Linux
@@ -64,39 +68,28 @@ case "$OS_NAME" in
         CMAKE_GENERATOR=Xcode
         PLATFORM_NAME=MacOS
         PRECOMPILED_HEADERS_ENABLED="OFF"
-        if [ "$APPLE_PLATFORM" == "" ]; then
-            case "$ARCH_NAME" in
-                arm64*)
-                    APPLE_PLATFORM=MAC_ARM64
-                    ;;
-                *)
-                    APPLE_PLATFORM=MAC
-                    ;;
-            esac
-        fi
-        if [ "$APPLE_DEPLOYMENT_TARGET" == "" ]; then
-            if [[ "$APPLE_PLATFORM" =~ ^MAC.*$ ]]; then
-                APPLE_DEPLOYMENT_TARGET="13.0"
-            else
-                APPLE_DEPLOYMENT_TARGET="16.0"
+        if [ "$APPLE_PLATFORM" != "" ]; then
+            # Disable tests cause unbundled console executables can not be built with iOS toolchain
+            TESTS_BUILD_ENABLED="OFF"
+            CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$SOURCE_DIR/Externals/iOS-Toolchain.cmake \
+                         -DPLATFORM=$APPLE_PLATFORM \
+                         -DDEPLOYMENT_TARGET=$APPLE_DEPLOYMENT_TARGET \
+                         -DENABLE_ARC:BOOL=ON \
+                         -DENABLE_VISIBILITY:BOOL=ON \
+                         -DENABLE_BITCODE:BOOL=OFF \
+                         -DENABLE_STRICT_TRY_COMPILE:BOOL=OFF"
+            if [ "$APPLE_DEVELOPMENT_TEAM" != "" ]; then
+                CMAKE_FLAGS="$CMAKE_FLAGS \
+                         -DAPPLE_DEVELOPMENT_TEAM=${APPLE_DEVELOPMENT_TEAM}"
+                CMAKE_BUID_OPTIONS="-- -allowProvisioningUpdates"
             fi
-        fi
-        CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$SOURCE_DIR/Externals/iOS-Toolchain.cmake \
-                     -DPLATFORM=$APPLE_PLATFORM \
-                     -DDEPLOYMENT_TARGET=$APPLE_DEPLOYMENT_TARGET \
-                     -DENABLE_ARC:BOOL=ON \
-                     -DENABLE_VISIBILITY:BOOL=ON \
-                     -DENABLE_BITCODE:BOOL=OFF \
-                     -DENABLE_STRICT_TRY_COMPILE:BOOL=OFF"
-        if [ "$APPLE_DEVELOPMENT_TEAM" != "" ]; then
-            CMAKE_FLAGS="$CMAKE_FLAGS \
-                     -DAPPLE_DEVELOPMENT_TEAM=${APPLE_DEVELOPMENT_TEAM}"
-            CMAKE_BUID_OPTIONS="-- -allowProvisioningUpdates"
+        else
+            APPLE_PLATFORM=MacOS_$ARCH_NAME
         fi
         ;;
     *)
-        echo "Unsupported operating system!" 1>&2 && exit 1
-        ;;
+    echo "Unsupported operating system!" 1>&2 && exit 1
+    ;;
 esac
 
 if [ "$IS_DEBUG_BUILD" == true ]; then
@@ -139,6 +132,8 @@ CMAKE_FLAGS="$CMAKE_FLAGS \
     -DMETHANE_VERSION_MINOR=$BUILD_VERSION_MINOR \
     -DMETHANE_VERSION_PATCH=$BUILD_VERSION_PATCH \
     -DMETHANE_GFX_VULKAN_ENABLED:BOOL=$VULKAN_BUILD_FLAG \
+    -DMETHANE_APPS_BUILD_ENABLED:BOOL=$APPS_BUILD_ENABLED \
+    -DMETHANE_TESTS_BUILD_ENABLED:BOOL=$TESTS_BUILD_ENABLED \
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON \
     -DMETHANE_RHI_PIMPL_INLINE_ENABLED:BOOL=ON \
     -DMETHANE_PRECOMPILED_HEADERS_ENABLED:BOOL=$PRECOMPILED_HEADERS_ENABLED \
@@ -151,7 +146,10 @@ CMAKE_FLAGS="$CMAKE_FLAGS \
     -DMETHANE_ITT_METADATA_ENABLED:BOOL=OFF \
     -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=OFF \
     -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF \
-    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF"
+    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF \
+    -DMETHANE_MEMORY_SANITIZER_ENABLED:BOOL=OFF \
+    -DMETHANE_METAL_SHADER_CONVERTER_ENABLED:BOOL=OFF \
+    -DMETHANE_METAL_ARGUMENT_BUFFERS_ENABLED:BOOL=ON"
 
 if [ "$IS_GRAPHVIZ_BUILD" == true ]; then
     GRAPHVIZ_DIR=$CONFIG_DIR/GraphViz
@@ -162,14 +160,14 @@ if [ "$IS_GRAPHVIZ_BUILD" == true ]; then
     CMAKE_FLAGS="$CMAKE_FLAGS --graphviz=$GRAPHVIZ_DOT_DIR/$GRAPHVIZ_FILE"
 fi
 
-BUILD_DIR=$CONFIG_DIR/Build
+    BUILD_DIR=$CONFIG_DIR/Build
 echo =========================================================
 echo Clean build and install Methane Asteroids $GFX_API_NAME $BUILD_TYPE
 echo =========================================================
-echo  \* Build in:   $BUILD_DIR
-echo  \* Install to: $INSTALL_DIR
+    echo  \* Build in:   $BUILD_DIR
+    echo  \* Install to: $INSTALL_DIR
 if [ "$IS_GRAPHVIZ_BUILD" == true ]; then
-    echo  \* Graphviz in: $GRAPHVIZ_DIR
+        echo  \* Graphviz in: $GRAPHVIZ_DIR
 fi
 echo =========================================================
 
@@ -179,35 +177,35 @@ if ! mkdir -p "$BUILD_DIR"; then
     exit 1
 fi
 
-echo ----------
-echo Generating build files for $CMAKE_GENERATOR...
-if ! cmake -S "$SOURCE_DIR" -B "$BUILD_DIR" -G "$CMAKE_GENERATOR" \
-    -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" $CMAKE_FLAGS; then
-    echo "Methane CMake generation failed."
-    exit 1
-fi
-
-if [ "$IS_GRAPHVIZ_BUILD" == true ]; then
     echo ----------
-    if [ -x "$GRAPHVIZ_DOT_EXE" ]; then
-        echo Converting GraphViz diagrams to images...
-        mkdir "$GRAPHVIZ_IMG_DIR"
-        for DOT_PATH in $GRAPHVIZ_DOT_DIR/*; do
-            DOT_IMG=$GRAPHVIZ_IMG_DIR/${DOT_PATH##*/}.png
-            echo Writing image $DOT_IMG...
-            if ! "$GRAPHVIZ_DOT_EXE" -Tpng "$DOT_PATH" -o "$DOT_IMG"; then
-                echo "Dot failed to generate diagram image."
-                exit 1
-            fi
-        done
-    else
-        echo GraphViz dot executable was not found. Skipping graph images generation.
+    echo Generating build files for $CMAKE_GENERATOR...
+    if ! cmake -S "$SOURCE_DIR" -B "$BUILD_DIR" -G "$CMAKE_GENERATOR" \
+        -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" $CMAKE_FLAGS; then
+        echo "Methane CMake generation failed."
+        exit 1
     fi
-fi
 
-echo ----------
-echo Build with $CMAKE_GENERATOR...
-if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install --parallel 8 $CMAKE_BUID_OPTIONS; then
+    if [ "$IS_GRAPHVIZ_BUILD" == true ]; then
+        echo ----------
+        if [ -x "$GRAPHVIZ_DOT_EXE" ]; then
+            echo Converting GraphViz diagrams to images...
+            mkdir "$GRAPHVIZ_IMG_DIR"
+            for DOT_PATH in $GRAPHVIZ_DOT_DIR/*; do
+                DOT_IMG=$GRAPHVIZ_IMG_DIR/${DOT_PATH##*/}.png
+                echo Writing image $DOT_IMG...
+                if ! "$GRAPHVIZ_DOT_EXE" -Tpng "$DOT_PATH" -o "$DOT_IMG"; then
+                    echo "Dot failed to generate diagram image."
+                    exit 1
+                fi
+            done
+        else
+            echo GraphViz dot executable was not found. Skipping graph images generation.
+        fi
+    fi
+
+    echo ----------
+    echo Build with $CMAKE_GENERATOR...
+    if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install --parallel 8 $CMAKE_BUID_OPTIONS ; then
     echo "Methane Asteroids build failed."
-    exit 1
-fi
+        exit 1
+    fi

@@ -1,15 +1,20 @@
 @REM Run 'Build.bat' with optional arguments:
-@REM   --vs2019   - build with Visual Studio 2022 instead of Visual Studio 2019 by default
-@REM   --win32    - 32-bit build instead of 64-bit by default
-@REM   --debug    - Debug build instead of Release build by default
-@REM   --vulkan   - use Vulkan graphics API instead of DirectX 12 by default
-@REM   --graphviz - enable GraphViz cmake module diagrams generation in Dot and Png formats
+@REM   --vs2019      - build with Visual Studio 2019 instead of Visual Studio 2022 by default
+@REM   --win32       - 32-bit build instead of 64-bit by default
+@REM   --debug       - Debug build instead of Release build by default
+@REM   --vulkan      - use Vulkan graphics API instead of DirectX 12 by default
+@REM   --graphviz    - enable GraphViz cmake module diagrams generation in Dot and Png formats
+@REM   --tracy       - enable Tracy Profiler instrumentation
+@REM   --itt         - enable ITT instrumentation for Intel GPA and VTune trace analysis
+@REM   --cpu_profile - enable advanced CPU profiling capabilities, like scope timers
+@REM   --gpu_profile - enable advanced GPU profiling capabilities, like timestamp queries in command lists
+@REM   --logs        - enable logging to VS Debug Output and to Tracy Messages
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 SET BUILD_VERSION_MAJOR=0
-SET BUILD_VERSION_MINOR=7
-SET BUILD_VERSION_PATCH=3
+SET BUILD_VERSION_MINOR=8
+SET BUILD_VERSION_PATCH=0
 SET BUILD_VERSION=%BUILD_VERSION_MAJOR%.%BUILD_VERSION_MINOR%.%BUILD_VERSION_PATCH%
 
 SET OUTPUT_DIR=%~dp0..\Output
@@ -33,6 +38,21 @@ IF NOT "%1"=="" (
     )
     IF "%1"=="--graphviz" (
         SET GRAPHVIZ_ENABLED=1
+    )
+    IF "%1"=="--tracy" (
+        SET TRACY_ENABLED=ON
+    )
+    IF "%1"=="--itt" (
+        SET ITT_ENABLED=ON
+    )
+    IF "%1"=="--cpu_profile" (
+        SET CPU_PROFILE_ENABLED=ON
+    )
+    IF "%1"=="--gpu_profile" (
+        SET GPU_PROFILE_ENABLED=ON
+    )
+    IF "%1"=="--logs" (
+        SET LOGS_ENABLED=ON
     )
     SHIFT
     GOTO :options_loop
@@ -65,17 +85,33 @@ IF DEFINED USE_VS2019 (
     SET CMAKE_GENERATOR=Visual Studio 17 2022
 )
 
+IF NOT DEFINED TRACY_ENABLED (
+    SET TRACY_ENABLED=OFF
+)
+IF NOT DEFINED ITT_ENABLED (
+    SET ITT_ENABLED=OFF
+)
+IF NOT DEFINED CPU_PROFILE_ENABLED (
+    SET CPU_PROFILE_ENABLED=OFF
+)
+IF NOT DEFINED GPU_PROFILE_ENABLED (
+    SET GPU_PROFILE_ENABLED=OFF
+)
+IF NOT DEFINED LOGS_ENABLED (
+    SET LOGS_ENABLED=OFF
+)
+
 SET CONFIG_DIR=%OUTPUT_DIR%\VisualStudio\%ARCH_TYPE%-MSVC-%GFX_API%-%BUILD_TYPE%-SLN
 SET INSTALL_DIR=%CONFIG_DIR%\Install
 
 SET CMAKE_FLAGS= ^
     -A %ARCH_TYPE% ^
-    -DASTEROIDS_VERSION_MAJOR=%BUILD_VERSION_MAJOR% ^
-    -DASTEROIDS_VERSION_MINOR=%BUILD_VERSION_MINOR% ^
-    -DASTEROIDS_VERSION_PATCH=%BUILD_VERSION_PATCH% ^
+    -DMETHANE_VERSION_MAJOR=%BUILD_VERSION_MAJOR% ^
+    -DMETHANE_VERSION_MINOR=%BUILD_VERSION_MINOR% ^
+    -DMETHANE_VERSION_PATCH=%BUILD_VERSION_PATCH% ^
     -DMETHANE_GFX_VULKAN_ENABLED:BOOL=%VULKAN_API_ENABLED% ^
-    -DMETHANE_APPS_BUILD_ENABLED:BOOL=OFF ^
-    -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF ^
+    -DMETHANE_APPS_BUILD_ENABLED:BOOL=ON ^
+    -DMETHANE_TESTS_BUILD_ENABLED:BOOL=ON ^
     -DMETHANE_UNITY_BUILD_ENABLED:BOOL=ON ^
     -DMETHANE_RHI_PIMPL_INLINE_ENABLED:BOOL=ON ^
     -DMETHANE_CHECKS_ENABLED:BOOL=ON ^
@@ -83,15 +119,16 @@ SET CMAKE_FLAGS= ^
     -DMETHANE_PRECOMPILED_HEADERS_ENABLED:BOOL=ON ^
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF ^
     -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF ^
-    -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON ^
-    -DMETHANE_LOGGING_ENABLED:BOOL=OFF ^
+    -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=%GPU_PROFILE_ENABLED% ^
+    -DMETHANE_LOGGING_ENABLED:BOOL=%LOGS_ENABLED% ^
     -DMETHANE_OPEN_IMAGE_IO_ENABLED:BOOL=OFF ^
-    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF ^
-    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=OFF ^
-    -DMETHANE_ITT_METADATA_ENABLED:BOOL=OFF ^
-    -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=OFF ^
-    -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF ^
-    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF
+    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=%CPU_PROFILE_ENABLED% ^
+    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=%ITT_ENABLED% ^
+    -DMETHANE_ITT_METADATA_ENABLED:BOOL=%ITT_ENABLED% ^
+    -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=%GPU_PROFILE_ENABLED% ^
+    -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=%TRACY_ENABLED% ^
+    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=%TRACY_ENABLED% ^
+    -DMETHANE_MEMORY_SANITIZER_ENABLED:BOOL=OFF
 
 IF DEFINED GRAPHVIZ_ENABLED (
     SET GRAPHVIZ_DIR=%CONFIG_DIR%\GraphViz
@@ -102,7 +139,7 @@ IF DEFINED GRAPHVIZ_ENABLED (
     SET CMAKE_FLAGS=%CMAKE_FLAGS% --graphviz="!GRAPHVIZ_DOT_DIR!\!GRAPHVIZ_FILE!"
 )
 
-SET BUILD_DIR=%CONFIG_DIR%\Build
+    SET BUILD_DIR=%CONFIG_DIR%\Build
 
 ECHO =========================================================
 ECHO Clean build and install Methane %GFX_API_NAME% %ARCH_TYPE% %BUILD_TYPE%
