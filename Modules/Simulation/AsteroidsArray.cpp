@@ -91,8 +91,8 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
 uint32_t AsteroidsArray::UberMesh::GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(instance_index, m_instance_count);
-    META_CHECK_ARG_LESS(subdivision_index, m_subdivisions_count);
+    META_CHECK_LESS(instance_index, m_instance_count);
+    META_CHECK_LESS(subdivision_index, m_subdivisions_count);
 
     return subdivision_index * m_instance_count + instance_index;
 }
@@ -100,10 +100,10 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetIndex(uint32_t instance_index, uint3
 uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(subset_index, GetSubsetCount());
+    META_CHECK_LESS(subset_index, GetSubsetCount());
 
     const uint32_t subdivision_index = subset_index / m_instance_count;
-    META_CHECK_ARG_LESS(subdivision_index, m_subdivisions_count);
+    META_CHECK_LESS(subdivision_index, m_subdivisions_count);
 
     return subdivision_index;
 }
@@ -111,7 +111,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) c
 const Asteroid::Mesh::DepthRange& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subset_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(subset_index, GetSubsetCount());
+    META_CHECK_LESS(subset_index, GetSubsetCount());
     assert(subset_index < m_depth_ranges.size());
     return m_depth_ranges[subset_index];
 }
@@ -255,13 +255,7 @@ AsteroidsArray::AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
             },
             rhi::Program::ArgumentAccessors
             {
-                { { rhi::ShaderType::All,    "g_mesh_uniforms"  }, rhi::Program::ArgumentAccessor::Type::Mutable, true },
-                { { rhi::ShaderType::All,    "g_scene_uniforms" }, rhi::Program::ArgumentAccessor::Type::FrameConstant },
-                { { rhi::ShaderType::Pixel,  "g_constants"      }, rhi::Program::ArgumentAccessor::Type::Constant      },
-                { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, rhi::Program::ArgumentAccessor::Type::Constant      },
-                { { rhi::ShaderType::Pixel,  "g_face_textures"  }, m_settings.textures_array_enabled
-                                                                 ? rhi::Program::ArgumentAccessor::Type::Constant
-                                                                 : rhi::Program::ArgumentAccessor::Type::Mutable },
+                META_PROGRAM_ARG_BUFFER_ADDRESS_MUTABLE(rhi::ShaderType::All, "g_mesh_uniforms")
             },
             render_pattern.GetAttachmentFormats()
         }
@@ -294,7 +288,7 @@ AsteroidsArray::AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
     for (uint32_t subset_index = 0; subset_index < m_content_state_ptr->mesh_subset_texture_indices.size(); ++subset_index)
     {
         const uint32_t subset_texture_index = m_content_state_ptr->mesh_subset_texture_indices[subset_index];
-        META_CHECK_ARG_LESS(subset_texture_index, m_unique_textures.size());
+        META_CHECK_LESS(subset_texture_index, m_unique_textures.size());
         SetSubsetTexture(m_unique_textures[subset_texture_index], subset_index);
     }
     
@@ -327,11 +321,11 @@ std::vector<rhi::ProgramBindings> AsteroidsArray::CreateProgramBindings(const rh
     
     program_bindings_array.resize(m_settings.instance_count);
     program_bindings_array[0] = m_render_state.GetProgram().CreateBindings({
-        { { rhi::ShaderType::All,    "g_mesh_uniforms"  }, { { asteroids_uniforms_buffer.GetInterface(), GetUniformsBufferOffset(0), uniform_data_size } } },
-        { { rhi::ShaderType::All,    "g_scene_uniforms" }, { { scene_uniforms_buffer.GetInterface() } } },
-        { { rhi::ShaderType::Pixel,  "g_constants"      }, { { constants_buffer.GetInterface()      } } },
-        { { rhi::ShaderType::Pixel,  "g_face_textures"  },     face_texture_locations                   },
-        { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, { { m_texture_sampler.GetInterface()     } } },
+        { { rhi::ShaderType::All,    "g_mesh_uniforms"  }, asteroids_uniforms_buffer.GetBufferView(GetUniformsBufferOffset(0), uniform_data_size) },
+        { { rhi::ShaderType::All,    "g_scene_uniforms" }, scene_uniforms_buffer.GetResourceView() },
+        { { rhi::ShaderType::Pixel,  "g_constants"      }, constants_buffer.GetResourceView()      },
+        { { rhi::ShaderType::Pixel,  "g_face_textures"  }, face_texture_locations                  },
+        { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, m_texture_sampler.GetResourceView()     },
     }, frame_index);
     program_bindings_array[0].SetName(fmt::format("Asteroids[0] Bindings {}", frame_index));
 
@@ -341,14 +335,14 @@ std::vector<rhi::ProgramBindings> AsteroidsArray::CreateProgramBindings(const rh
         {
             META_UNUSED(uniform_data_size); // workaround for Clang error unused-lambda-capture uniform_data_size (false positive)
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
-            META_CHECK_ARG_EQUAL(asteroid_uniform_offset % 256, 0);
-            rhi::ProgramBindings::ResourceViewsByArgument set_resource_view_by_argument{
-                { { rhi::ShaderType::All, "g_mesh_uniforms" }, { { asteroids_uniforms_buffer.GetInterface(), asteroid_uniform_offset, uniform_data_size } } },
+            META_CHECK_EQUAL(asteroid_uniform_offset % 256, 0);
+            rhi::ProgramBindingValueByArgument set_resource_view_by_argument{
+                { { rhi::ShaderType::All, "g_mesh_uniforms" }, asteroids_uniforms_buffer.GetBufferView(asteroid_uniform_offset, uniform_data_size) }
             };
             if (!m_settings.textures_array_enabled)
             {
                 set_resource_view_by_argument.insert(
-                    { { rhi::ShaderType::Pixel, "g_face_textures" }, { { GetInstanceTexture(asteroid_index).GetInterface() } } }
+                    { { rhi::ShaderType::Pixel, "g_face_textures" }, GetInstanceTexture(asteroid_index).GetResourceView() }
                 );
             }
             program_bindings_array[asteroid_index] = rhi::ProgramBindings(program_bindings_array[0], set_resource_view_by_argument, frame_index);
@@ -385,7 +379,7 @@ void AsteroidsArray::Draw(const rhi::RenderCommandList& cmd_list,
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Draw");
-    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), GetUniformsBufferSize());
+    META_CHECK_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), GetUniformsBufferSize());
 
     // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
     auto uniforms_update_future = std::async([this, &buffer_bindings]() {
@@ -396,7 +390,7 @@ void AsteroidsArray::Draw(const rhi::RenderCommandList& cmd_list,
     cmd_list.ResetWithState(m_render_state, &s_debug_group);
     cmd_list.SetViewState(view_state);
 
-    META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
+    META_CHECK_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
     BaseBuffers::Draw(
         cmd_list,
         buffer_bindings.program_bindings_per_instance,
@@ -416,7 +410,7 @@ void AsteroidsArray::DrawParallel(const rhi::ParallelRenderCommandList& parallel
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::DrawParallel");
-    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), GetUniformsBufferSize());
+    META_CHECK_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), GetUniformsBufferSize());
 
     // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
     auto uniforms_update_future = std::async([this, &buffer_bindings]() {
@@ -427,7 +421,7 @@ void AsteroidsArray::DrawParallel(const rhi::ParallelRenderCommandList& parallel
     parallel_cmd_list.ResetWithState(m_render_state, &s_debug_group);
     parallel_cmd_list.SetViewState(view_state);
 
-    META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
+    META_CHECK_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
     BaseBuffers::DrawParallel(
         parallel_cmd_list,
         buffer_bindings.program_bindings_per_instance,
@@ -453,7 +447,7 @@ void AsteroidsArray::SetMinMeshLodScreenSize(float mesh_lod_min_screen_size)
 uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(instance_index, m_mesh_subset_by_instance_index.size());
+    META_CHECK_LESS(instance_index, m_mesh_subset_by_instance_index.size());
     return m_mesh_subset_by_instance_index[instance_index];
 }
 

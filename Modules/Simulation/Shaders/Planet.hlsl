@@ -40,11 +40,11 @@ struct PSInput
     float2 texcoord         : TEXCOORD;
 };
 
-ConstantBuffer<SceneConstants> g_constants : register(b1);
-ConstantBuffer<PlanetUniforms> g_uniforms  : register(b2);
+ConstantBuffer<SceneConstants> g_constants : register(b0, META_ARG_CONSTANT);
+ConstantBuffer<PlanetUniforms> g_uniforms  : register(b1, META_ARG_FRAME_CONSTANT);
 
-Texture2D    g_texture   : register(t0);
-SamplerState g_sampler   : register(s0);
+Texture2D    g_texture   : register(t0, META_ARG_CONSTANT);
+SamplerState g_sampler   : register(s0, META_ARG_CONSTANT);
 
 PSInput PlanetVS(VSInput input)
 {

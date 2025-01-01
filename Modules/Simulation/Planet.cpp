@@ -65,13 +65,7 @@ Planet::Planet(const rhi::CommandQueue& render_cmd_queue,
             {
                 rhi::Program::InputBufferLayout { mesh.GetVertexLayout().GetSemantics() }
             },
-            rhi::Program::ArgumentAccessors
-            {
-                { { rhi::ShaderType::All,    "g_uniforms"  }, rhi::Program::ArgumentAccessor::Type::FrameConstant  },
-                { { rhi::ShaderType::Pixel,  "g_constants" }, rhi::Program::ArgumentAccessor::Type::Constant       },
-                { { rhi::ShaderType::Pixel,  "g_texture"   }, rhi::Program::ArgumentAccessor::Type::Constant       },
-                { { rhi::ShaderType::Pixel,  "g_sampler"   }, rhi::Program::ArgumentAccessor::Type::Constant       },
-            },
+            rhi::Program::ArgumentAccessors{ },
             render_pattern.GetAttachmentFormats()
         }
     );
@@ -102,10 +96,10 @@ rhi::ProgramBindings Planet::CreateProgramBindings(const rhi::Buffer& constants_
 {
     META_FUNCTION_TASK();
     return m_render_state.GetProgram().CreateBindings({
-        { { rhi::ShaderType::All,   "g_uniforms"  }, { { uniforms_buffer.GetInterface()   } } },
-        { { rhi::ShaderType::Pixel, "g_constants" }, { { constants_buffer.GetInterface()  } } },
-        { { rhi::ShaderType::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexture().GetInterface() } } },
-        { { rhi::ShaderType::Pixel, "g_sampler"   }, { { m_texture_sampler.GetInterface() } } },
+        { { rhi::ShaderType::All,   "g_uniforms"  }, uniforms_buffer.GetResourceView()   },
+        { { rhi::ShaderType::Pixel, "g_constants" }, constants_buffer.GetResourceView()  },
+        { { rhi::ShaderType::Pixel, "g_texture"   }, m_mesh_buffers.GetTexture().GetResourceView() },
+        { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() },
     }, frame_index);
 }
 
@@ -132,7 +126,7 @@ void Planet::Draw(const rhi::RenderCommandList& cmd_list,
                   const rhi::ViewState& view_state)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), sizeof(hlslpp::PlanetUniforms));
+    META_CHECK_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), sizeof(hlslpp::PlanetUniforms));
     buffer_bindings.uniforms_buffer.SetData(m_render_cmd_queue, m_mesh_buffers.GetFinalPassUniformsSubresource());
 
     META_DEBUG_GROUP_VAR(s_debug_group, "Planet Rendering");

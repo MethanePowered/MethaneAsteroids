@@ -90,7 +90,7 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
         break;
         
     default:
-        META_UNEXPECTED_ARG(action);
+        META_UNEXPECTED(action);
     }
 }
 
@@ -115,7 +115,7 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
     case AsteroidsAppAction::SetComplexity7:            return "set 7 scene complexity";
     case AsteroidsAppAction::SetComplexity8:            return "set 8 scene complexity";
     case AsteroidsAppAction::SetComplexity9:            return "set 9 scene complexity";
-    default:                                            META_UNEXPECTED_ARG_RETURN(action, "");
+    default:                                            META_UNEXPECTED_RETURN(action, "");
     }
 }
 

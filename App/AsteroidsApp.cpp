@@ -33,7 +33,6 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <thread>
 #include <array>
 #include <map>
-#include <magic_enum.hpp>
 
 namespace Methane::Samples
 {
@@ -353,7 +352,7 @@ void AsteroidsApp::Init()
         frame.asteroids.uniforms_buffer.SetName(fmt::format("Asteroids Array Uniforms Buffer {}", frame.index));
 
         // Resource bindings for Sky-Box rendering
-        frame.sky_box.program_bindings = m_sky_box.CreateProgramBindings(frame.sky_box.uniforms_buffer, frame.index);
+        std::tie(frame.sky_box.program_bindings, frame.sky_box.uniforms_argument_binding_ptr) = m_sky_box.CreateProgramBindings(frame.index);
         frame.sky_box.program_bindings.SetName(fmt::format("Space Sky-Box Bindings {}", frame.index));
 
         // Resource bindings for Planet rendering
@@ -410,12 +409,14 @@ bool AsteroidsApp::Update()
     if (!UserInterfaceApp::Update())
         return false;
 
+    const AsteroidsFrame& frame = GetCurrentFrame();
+
     // Update scene uniforms
     m_scene_uniforms.view_proj_matrix = hlslpp::transpose(m_view_camera.GetViewProjMatrix());
     m_scene_uniforms.eye_position     = m_view_camera.GetOrientation().eye;
     m_scene_uniforms.light_position   = m_light_camera.GetOrientation().eye;
 
-    m_sky_box.Update();
+    m_sky_box.Update(*frame.sky_box.uniforms_argument_binding_ptr);
     return true;
 }
 
@@ -453,7 +454,7 @@ bool AsteroidsApp::Render()
     
     // Draw planet and sky-box after asteroids to minimize pixel overdraw
     m_planet_ptr->Draw(frame.final_cmd_list, frame.planet, GetViewState());
-    m_sky_box.Draw(frame.final_cmd_list, frame.sky_box, GetViewState());
+    m_sky_box.Draw(frame.final_cmd_list, frame.sky_box.program_bindings, GetViewState());
 
     RenderOverlay(frame.final_cmd_list);
     frame.final_cmd_list.Commit();
@@ -537,7 +538,7 @@ void AsteroidsApp::SetParallelRenderingEnabled(bool is_parallel_rendering_enable
 AsteroidsArray& AsteroidsApp::GetAsteroidsArray() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_asteroids_array_ptr);
+    META_CHECK_NOT_NULL(m_asteroids_array_ptr);
     return *m_asteroids_array_ptr;
 }
 

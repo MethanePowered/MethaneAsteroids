@@ -46,14 +46,19 @@ namespace pin = Platform::Input;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
+    struct MeshBufferBindings : gfx::MeshBufferBindings
+    {
+        rhi::IProgramArgumentBinding* uniforms_argument_binding_ptr;
+    };
+
     rhi::RenderPass                  asteroids_pass;
     rhi::ParallelRenderCommandList   parallel_cmd_list;
     rhi::RenderCommandList           serial_cmd_list;
     rhi::RenderCommandList           final_cmd_list;
     rhi::CommandListSet              execute_cmd_list_set;
     rhi::Buffer                      scene_uniforms_buffer;
-    gfx::MeshBufferBindings          sky_box;
-    gfx::MeshBufferBindings          planet;
+    MeshBufferBindings               sky_box;
+    MeshBufferBindings               planet;
     gfx::InstancedMeshBufferBindings asteroids;
 
     using gfx::AppFrame::AppFrame;

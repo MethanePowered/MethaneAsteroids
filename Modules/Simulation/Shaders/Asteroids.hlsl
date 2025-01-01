@@ -49,11 +49,17 @@ struct PSInput
     float3 face_blend_weights: BLENDWEIGHT;
 };
 
-ConstantBuffer<SceneConstants>   g_constants                     : register(b1);
-ConstantBuffer<SceneUniforms>    g_scene_uniforms                : register(b2);
-ConstantBuffer<AsteroidUniforms> g_mesh_uniforms                 : register(b3);
-Texture2DArray<float4>           g_face_textures[TEXTURES_COUNT] : register(t1);
-SamplerState                     g_texture_sampler               : register(s1);
+ConstantBuffer<AsteroidUniforms> g_mesh_uniforms                 : register(b0, META_ARG_MUTABLE);
+ConstantBuffer<SceneUniforms>    g_scene_uniforms                : register(b1, META_ARG_FRAME_CONSTANT);
+ConstantBuffer<SceneConstants>   g_constants                     : register(b2, META_ARG_CONSTANT);
+SamplerState                     g_texture_sampler               : register(s0, META_ARG_CONSTANT);
+Texture2DArray<float4>           g_face_textures[TEXTURES_COUNT] : register(t0,
+#if TEXTURES_COUNT > 1
+    META_ARG_CONSTANT
+#else
+    META_ARG_MUTABLE
+#endif
+);
 
 PSInput AsteroidVS(VSInput input)
 {
