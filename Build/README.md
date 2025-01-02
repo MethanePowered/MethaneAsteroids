@@ -176,7 +176,7 @@ by searching for the value of parameter named `DEVELOPMENT_TEAM`.
 Auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) can make it more simple for you:
 
 ```console
-./Build/Unix/Build.sh --apple-platform [SIMULATORARM64|OS64|SIMULATOR_TVOS|TVOS] [--apple-dev-team 12345X6ABC] [--apple-deploy-target 15.1] [--debug]
+./Build/Unix/Build.sh --apple-platform [SIMULATORARM64|OS64|SIMULATOR_TVOS|TVOS] [--apple-dev-team 12345X6ABC] [--apple-deploy-target 16.0] [--debug]
 ```
 
 Please open generated Xcode workspace, select application schema and run it on iOS / tvOS device or simulator from the Xcode IDE.

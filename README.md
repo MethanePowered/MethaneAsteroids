@@ -44,9 +44,9 @@ but implemented from scratch in a cross-platform style using [Methane Kit](https
 Default parameters of asteroids simulation are selected depending on CPU HW cores count and are displayed 
 in right-bottom panel (switched with `F3` key).
 Overall scene complexity can be reduced or increased by pressing `[` / `]` keys.
-Sample renders galaxy background using [Methane::Graphics::SkyBox](https://github.com/MethanePowered/MethaneKit/tree/master/Modules/Graphics/Extensions/Include/Methane/Graphics/SkyBox.h)
-and planet using generated [Methane::Graphics::SphereMesh](https://github.com/MethanePowered/MethaneKit/tree/master/Modules/Graphics/Primitives/Include/Methane/Graphics/Mesh/SphereMesh.hpp)
-with spherical texture coordinates. It also uses interactive [Arc-Ball camera](https://github.com/MethanePowered/MethaneKit/tree/master/Modules/Graphics/Camera/Include/Methane/Graphics/ArcBallCamera.h)
+Sample renders galaxy background using [Methane::Graphics::SkyBox](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/Primitives/Include/Methane/Graphics/SkyBox.h)
+and planet using generated [Methane::Graphics::SphereMesh](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/Mesh/Include/Methane/Graphics/SphereMesh.hpp)
+with spherical texture coordinates. It also uses interactive [Arc-Ball camera](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/Camera/Include/Methane/Graphics/ArcBallCamera.h)
 rotated with mouse `LMB` and light rotated with `RMB` with keyboard shortcuts also available (see in help by `F1` key).
 
 ## Rendering Optimizations
@@ -55,8 +55,8 @@ rotated with mouse `LMB` and light rotated with `RMB` with keyboard shortcuts al
   This allows to greatly reduce GPU overhead. Use `L` key to enable LODs coloring and `'` / `;` keys to increase / reduce overall mesh level of details.
 - **Parallel rendering** of asteroids array with individual draw-calls allows to be less CPU bound.
   Multi-threading can be switched off for comparing with single-threaded rendering by pressing `P` key.
-- **Parallel updating** of asteroid transformation matrices in [AsteroidsArray::Update](/Modules/Simulation/AsteroidsArray.cpp#L352) and
-  encoding asteroid meshes rendering in [MeshBuffers::DrawParallel](https://github.com/MethanePowered/MethaneKit/tree/master/Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp#L160)
+- **Parallel updating** of asteroid transformation matrices in [AsteroidsArray::Update](/Modules/Simulation/AsteroidsArray.cpp#L357) and
+  encoding asteroid meshes rendering in [MeshBuffers::DrawParallel](https://github.com/MethanePowered/MethaneKit/blob/master/Modules/Graphics/Primitives/Include/Methane/Graphics/MeshBuffers.hpp)
   are implemented using [Taskflow](https://github.com/taskflow/taskflow/) library which enables effective usage of the thread-pool via `parallel_for` primitive.
 - All asteroid textures are bound to program uniform all at once as an **array of textures** to minimize number of program binding calls between draws.
   Particular texture is selected on each draw call using index parameter in constants buffer.
