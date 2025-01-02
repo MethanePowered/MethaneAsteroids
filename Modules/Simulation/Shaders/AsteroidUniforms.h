@@ -25,6 +25,9 @@ struct SceneUniforms
     float4x4 view_proj_matrix;
     float3   eye_position;
     float3   light_position;
+#ifndef __cplusplus
+    float    _;
+#endif
 };
 
 struct META_UNIFORM_ALIGN AsteroidUniforms
