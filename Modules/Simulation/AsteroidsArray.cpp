@@ -255,6 +255,7 @@ AsteroidsArray::AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
             },
             rhi::Program::ArgumentAccessors
             {
+                META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::All, "g_scene_uniforms"),
                 META_PROGRAM_ARG_BUFFER_ADDRESS_MUTABLE(rhi::ShaderType::All, "g_mesh_uniforms")
             },
             render_pattern.GetAttachmentFormats()
@@ -302,36 +303,42 @@ AsteroidsArray::AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
     Update(0.0, 0.0);
 }
 
-std::vector<rhi::ProgramBindings> AsteroidsArray::CreateProgramBindings(const rhi::Buffer& constants_buffer,
-                                                                        const rhi::Buffer& scene_uniforms_buffer,
-                                                                        const rhi::Buffer& asteroids_uniforms_buffer,
-                                                                        Data::Index frame_index) const
+AsteroidsArray::AsteroidMeshBufferBindings AsteroidsArray::CreateProgramBindings(
+    const rhi::Buffer& constants_buffer,
+    const rhi::Buffer& asteroids_uniforms_buffer,
+    Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
 
-    std::vector<rhi::ProgramBindings> program_bindings_array;
+    AsteroidMeshBufferBindings asteroid_mesh_buffer_bindings;
+    asteroid_mesh_buffer_bindings.uniforms_buffer = asteroids_uniforms_buffer;
     if (m_settings.instance_count == 0)
-        return program_bindings_array;
+        return asteroid_mesh_buffer_bindings;
+
+    std::vector<rhi::ProgramBindings>& program_bindings_array = asteroid_mesh_buffer_bindings.program_bindings_per_instance;
+    std::vector<rhi::IProgramArgumentBinding*>& scene_uniforms_binding_ptrs = asteroid_mesh_buffer_bindings.scene_uniforms_binding_ptrs;
 
     const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
     const rhi::ResourceViews face_texture_locations = m_settings.textures_array_enabled
                                                     ? rhi::CreateResourceViews(m_unique_textures)
                                                     : rhi::CreateResourceViews(GetInstanceTexture());
-    
+
     program_bindings_array.resize(m_settings.instance_count);
+    scene_uniforms_binding_ptrs.resize(m_settings.instance_count, nullptr);
+
     program_bindings_array[0] = m_render_state.GetProgram().CreateBindings({
         { { rhi::ShaderType::All,    "g_mesh_uniforms"  }, asteroids_uniforms_buffer.GetBufferView(GetUniformsBufferOffset(0), uniform_data_size) },
-        { { rhi::ShaderType::All,    "g_scene_uniforms" }, scene_uniforms_buffer.GetResourceView() },
         { { rhi::ShaderType::Pixel,  "g_constants"      }, constants_buffer.GetResourceView()      },
         { { rhi::ShaderType::Pixel,  "g_face_textures"  }, face_texture_locations                  },
         { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, m_texture_sampler.GetResourceView()     },
     }, frame_index);
     program_bindings_array[0].SetName(fmt::format("Asteroids[0] Bindings {}", frame_index));
+    scene_uniforms_binding_ptrs[0] = &program_bindings_array[0].Get({ rhi::ShaderType::All, "g_scene_uniforms" });
 
     tf::Taskflow task_flow;
     task_flow.for_each_index(1U, m_settings.instance_count, 1U,
-        [this, &program_bindings_array, &asteroids_uniforms_buffer, uniform_data_size, frame_index](const uint32_t asteroid_index)
+        [this, &program_bindings_array, &scene_uniforms_binding_ptrs, &asteroids_uniforms_buffer, uniform_data_size, frame_index](const uint32_t asteroid_index)
         {
             META_UNUSED(uniform_data_size); // workaround for Clang error unused-lambda-capture uniform_data_size (false positive)
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
@@ -345,13 +352,15 @@ std::vector<rhi::ProgramBindings> AsteroidsArray::CreateProgramBindings(const rh
                     { { rhi::ShaderType::Pixel, "g_face_textures" }, GetInstanceTexture(asteroid_index).GetResourceView() }
                 );
             }
-            program_bindings_array[asteroid_index] = rhi::ProgramBindings(program_bindings_array[0], set_resource_view_by_argument, frame_index);
-            program_bindings_array[asteroid_index].SetName(fmt::format("Asteroids[{}] Bindings {}", asteroid_index, frame_index));
+            rhi::ProgramBindings& asteroid_program_bindings = program_bindings_array[asteroid_index];
+            asteroid_program_bindings = rhi::ProgramBindings(program_bindings_array[0], set_resource_view_by_argument, frame_index);
+            asteroid_program_bindings.SetName(fmt::format("Asteroids[{}] Bindings {}", asteroid_index, frame_index));
+            scene_uniforms_binding_ptrs[asteroid_index] = &asteroid_program_bindings.Get({ rhi::ShaderType::All, "g_scene_uniforms" });
         }
     );
     GetContext().GetParallelExecutor().run(task_flow).get();
 
-    return program_bindings_array;
+    return asteroid_mesh_buffer_bindings;
 }
 
 bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)

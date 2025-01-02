@@ -20,7 +20,7 @@ using uint = uint32_t;
 #define META_UNIFORM_ALIGN
 #endif
 
-struct META_UNIFORM_ALIGN SceneUniforms
+struct SceneUniforms
 {
     float4x4 view_proj_matrix;
     float3   eye_position;

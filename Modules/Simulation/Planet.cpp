@@ -65,7 +65,10 @@ Planet::Planet(const rhi::CommandQueue& render_cmd_queue,
             {
                 rhi::Program::InputBufferLayout { mesh.GetVertexLayout().GetSemantics() }
             },
-            rhi::Program::ArgumentAccessors{ },
+            rhi::Program::ArgumentAccessors
+            {
+                META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::All, "g_uniforms")
+            },
             render_pattern.GetAttachmentFormats()
         }
     );
@@ -85,25 +88,22 @@ Planet::Planet(const rhi::CommandQueue& render_cmd_queue,
         rhi::Sampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_texture_sampler.SetName("Planet Texture Sampler");
-
-    // Initialize default uniforms to be ready to render right away
-    Update(0.0, 0.0);
 }
 
-rhi::ProgramBindings Planet::CreateProgramBindings(const rhi::Buffer& constants_buffer,
-                                                   const rhi::Buffer& uniforms_buffer,
-                                                   Data::Index frame_index) const
+Planet::ProgramBindingsAndUniformArgumentBinding Planet::CreateProgramBindings(const rhi::Buffer& constants_buffer,
+                                                                               Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
-    return m_render_state.GetProgram().CreateBindings({
-        { { rhi::ShaderType::All,   "g_uniforms"  }, uniforms_buffer.GetResourceView()   },
+    rhi::ProgramBindings program_bindings = m_render_state.GetProgram().CreateBindings({
         { { rhi::ShaderType::Pixel, "g_constants" }, constants_buffer.GetResourceView()  },
         { { rhi::ShaderType::Pixel, "g_texture"   }, m_mesh_buffers.GetTexture().GetResourceView() },
         { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() },
     }, frame_index);
+    rhi::IProgramArgumentBinding& uniforms_arg_binding = program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" });
+    return ProgramBindingsAndUniformArgumentBinding(std::move(program_bindings), &uniforms_arg_binding);
 }
 
-bool Planet::Update(double elapsed_seconds, double)
+bool Planet::Update(double elapsed_seconds, double, rhi::IProgramArgumentBinding& uniforms_argument_binding)
 {
     META_FUNCTION_TASK();
     const hlslpp::float4x4 model_scale_matrix     = hlslpp::float4x4::scale(m_settings.scale);
@@ -117,22 +117,20 @@ bool Planet::Update(double elapsed_seconds, double)
     uniforms.model_matrix   = hlslpp::transpose(model_matrix);
     uniforms.mvp_matrix     = hlslpp::transpose(hlslpp::mul(model_matrix, m_settings.view_camera.GetViewProjMatrix()));
 
-    m_mesh_buffers.SetFinalPassUniforms(std::move(uniforms));
+    uniforms_argument_binding.SetRootConstant(rhi::RootConstant(uniforms));
     return true;
 }
 
 void Planet::Draw(const rhi::RenderCommandList& cmd_list,
-                  const gfx::MeshBufferBindings& buffer_bindings,
+                  const rhi::ProgramBindings& program_bindings,
                   const rhi::ViewState& view_state)
 {
     META_FUNCTION_TASK();
-    META_CHECK_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), sizeof(hlslpp::PlanetUniforms));
-    buffer_bindings.uniforms_buffer.SetData(m_render_cmd_queue, m_mesh_buffers.GetFinalPassUniformsSubresource());
 
     META_DEBUG_GROUP_VAR(s_debug_group, "Planet Rendering");
     cmd_list.ResetWithState(m_render_state, &s_debug_group);
     cmd_list.SetViewState(view_state);
-    m_mesh_buffers.Draw(cmd_list, buffer_bindings.program_bindings);
+    m_mesh_buffers.Draw(cmd_list, program_bindings);
 }
 
 } // namespace Methane::Graphics

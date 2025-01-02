@@ -100,6 +100,14 @@ static const std::map<pin::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
     { { pin::Keyboard::Key::Num9         }, AsteroidsAppAction::SetComplexity9              },
 };
 
+static const float                  g_scene_scale = 15.F;
+static const hlslpp::SceneConstants g_scene_constants{
+    { 1.F, 1.F, 1.F, 1.F },       // - light_color
+    3.0F,                         // - light_power
+    0.05F,                        // - light_ambient_factor
+    30.F                          // - light_specular_factor
+};
+
 void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
 {
     META_FUNCTION_TASK();
@@ -150,7 +158,7 @@ AsteroidsApp::AsteroidsApp()
     , m_asteroids_array_settings(                       // Asteroids array settings:
         {                                               // ================
             m_view_camera,                              // - view_camera
-            m_scene_scale,                              // - scale
+            g_scene_scale,                              // - scale
             GetMutableParameters().instances_count,     // - instance_count
             GetMutableParameters().unique_mesh_count,   // - unique_mesh_count
             4U,                                         // - subdivisions_count
@@ -272,7 +280,7 @@ void AsteroidsApp::Init()
         gfx::SkyBox::Settings
         {
             m_view_camera,
-            m_scene_scale * 100.F,
+            g_scene_scale * 100.F,
             { gfx::SkyBox::Option::DepthEnabled, gfx::SkyBox::Option::DepthReversed }
         });
 
@@ -284,7 +292,7 @@ void AsteroidsApp::Init()
             m_light_camera,
             "Planet/Mars.jpg",                      // texture_path
             hlslpp::float3(0.F, 0.F, 0.F),          // position
-            m_scene_scale * 3.F,                    // scale
+            g_scene_scale * 3.F,                    // scale
             0.1F,                                   // spin_velocity_rps
             true,                                   // depth_reversed
             { gfx::ImageOption::Mipmapped,          // image_options
@@ -299,15 +307,14 @@ void AsteroidsApp::Init()
                           : std::make_unique<AsteroidsArray>(render_cmd_queue, m_asteroids_render_pattern, m_asteroids_array_settings);
 
     const auto       constants_data_size         = static_cast<Data::Size>(sizeof(hlslpp::SceneConstants));
-    const auto       scene_uniforms_data_size    = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
     const Data::Size asteroid_uniforms_data_size = m_asteroids_array_ptr->GetUniformsBufferSize();
 
     // Create constants buffer for frame rendering
     m_const_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(constants_data_size));
     m_const_buffer.SetName("Constants Buffer");
     m_const_buffer.SetData(render_cmd_queue, {
-        reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants),
-        sizeof(m_scene_constants)
+        reinterpret_cast<Data::ConstRawPtr>(&g_scene_constants),
+        sizeof(g_scene_constants)
     });
 
     // ========= Per-Frame Data =========
@@ -335,18 +342,6 @@ void AsteroidsApp::Init()
         // Rendering command lists sequence
         frame.execute_cmd_list_set = CreateExecuteCommandListSet(frame);
 
-        // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.scene_uniforms_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(scene_uniforms_data_size, false, true));
-        frame.scene_uniforms_buffer.SetName(fmt::format("Scene Uniforms Buffer {}", frame.index));
-
-        // Create uniforms buffer for Sky-Box rendering
-        frame.sky_box.uniforms_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(gfx::SkyBox::GetUniformsSize(), false, true));
-        frame.sky_box.uniforms_buffer.SetName(fmt::format("Sky-box Uniforms Buffer {}", frame.index));
-
-        // Create uniforms buffer for Planet rendering
-        frame.planet.uniforms_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(sizeof(hlslpp::PlanetUniforms), false, true));
-        frame.planet.uniforms_buffer.SetName(fmt::format("Planet Uniforms Buffer {}", frame.index));
-
         // Create uniforms buffer for Asteroids array rendering
         frame.asteroids.uniforms_buffer = context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(asteroid_uniforms_data_size, true, true));
         frame.asteroids.uniforms_buffer.SetName(fmt::format("Asteroids Array Uniforms Buffer {}", frame.index));
@@ -356,15 +351,13 @@ void AsteroidsApp::Init()
         frame.sky_box.program_bindings.SetName(fmt::format("Space Sky-Box Bindings {}", frame.index));
 
         // Resource bindings for Planet rendering
-        frame.planet.program_bindings = m_planet_ptr->CreateProgramBindings(m_const_buffer, frame.planet.uniforms_buffer, frame.index);
+        std::tie(frame.planet.program_bindings, frame.planet.uniforms_argument_binding_ptr) = m_planet_ptr->CreateProgramBindings(m_const_buffer, frame.index);
         frame.planet.program_bindings.SetName(fmt::format("Planet Bindings {}", frame.index));
 
-
         // Resource bindings for Asteroids rendering
-        frame.asteroids.program_bindings_per_instance = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer,
-                                                                                                     frame.scene_uniforms_buffer,
-                                                                                                     frame.asteroids.uniforms_buffer,
-                                                                                                     frame.index);
+        frame.asteroids = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer,
+                                                                       frame.asteroids.uniforms_buffer,
+                                                                       frame.index);
     }
 
     // Update initial resource states before asteroids drawing without applying barriers on GPU (automatic state propagation from Common state works),
@@ -386,14 +379,13 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     // Update frame buffer and depth textures in initial & final render passes
     for (const AsteroidsFrame& frame : GetFrames())
     {
-        rhi::RenderPassSettings asteroids_pass_settings{
+        frame.asteroids_pass.Update(rhi::RenderPassSettings{
             {
                 rhi::TextureView(frame.screen_texture.GetInterface()),
                 rhi::TextureView(GetDepthTexture().GetInterface())
             },
             frame_size
-        };
-        frame.asteroids_pass.Update(asteroids_pass_settings);
+        });
     }
 
     m_view_camera.Resize(frame_size);
@@ -412,9 +404,15 @@ bool AsteroidsApp::Update()
     const AsteroidsFrame& frame = GetCurrentFrame();
 
     // Update scene uniforms
-    m_scene_uniforms.view_proj_matrix = hlslpp::transpose(m_view_camera.GetViewProjMatrix());
-    m_scene_uniforms.eye_position     = m_view_camera.GetOrientation().eye;
-    m_scene_uniforms.light_position   = m_light_camera.GetOrientation().eye;
+    hlslpp::SceneUniforms scene_uniforms{ };
+    scene_uniforms.view_proj_matrix = hlslpp::transpose(m_view_camera.GetViewProjMatrix());
+    scene_uniforms.eye_position     = m_view_camera.GetOrientation().eye;
+    scene_uniforms.light_position   = m_light_camera.GetOrientation().eye;
+
+    // NOTE: It's enough to set root constant only for the first asteroid bindings,
+    // since scene uniforms argument is declared as FRAME_CONSTANT, so all asteroids
+    // use the same argument buffer range for all instances.
+    frame.asteroids.scene_uniforms_binding_ptrs[0]->SetRootConstant(rhi::RootConstant(scene_uniforms));
 
     m_sky_box.Update(*frame.sky_box.uniforms_argument_binding_ptr);
     return true;
@@ -423,7 +421,8 @@ bool AsteroidsApp::Update()
 bool AsteroidsApp::Animate(double elapsed_seconds, double delta_seconds) const
 {
     META_FUNCTION_TASK();
-    bool update_result = m_planet_ptr->Update(elapsed_seconds, delta_seconds);
+    const AsteroidsFrame& frame = GetCurrentFrame();
+    bool update_result = m_planet_ptr->Update(elapsed_seconds, delta_seconds, *frame.planet.uniforms_argument_binding_ptr);
     update_result     |= m_asteroids_array_ptr->Update(elapsed_seconds, delta_seconds);
     return update_result;
 }
@@ -437,8 +436,6 @@ bool AsteroidsApp::Render()
 
     // Upload uniform buffers to GPU
     const AsteroidsFrame& frame = GetCurrentFrame();
-    rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.scene_uniforms_buffer.SetData(render_cmd_queue, m_scene_uniforms_subresource);
 
     // Asteroids rendering in parallel or in main thread
     if (m_is_parallel_rendering_enabled)
@@ -453,14 +450,14 @@ bool AsteroidsApp::Render()
     }
     
     // Draw planet and sky-box after asteroids to minimize pixel overdraw
-    m_planet_ptr->Draw(frame.final_cmd_list, frame.planet, GetViewState());
+    m_planet_ptr->Draw(frame.final_cmd_list, frame.planet.program_bindings, GetViewState());
     m_sky_box.Draw(frame.final_cmd_list, frame.sky_box.program_bindings, GetViewState());
 
     RenderOverlay(frame.final_cmd_list);
     frame.final_cmd_list.Commit();
 
     // Execute rendering commands and present frame to screen
-    render_cmd_queue.Execute(frame.execute_cmd_list_set);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(frame.execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;

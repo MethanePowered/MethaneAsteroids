@@ -70,17 +70,19 @@ public:
         float                        lod_bias            = 0.F;
     };
 
+    using ProgramBindingsAndUniformArgumentBinding = std::pair<rhi::ProgramBindings, rhi::IProgramArgumentBinding*>;
+
     Planet(const rhi::CommandQueue& render_cmd_queue,
            const rhi::RenderPattern& render_pattern,
            const gfx::ImageLoader& image_loader,
            const Settings& settings);
 
-    rhi::ProgramBindings CreateProgramBindings(const rhi::Buffer& constants_buffer_ptr,
-                                               const rhi::Buffer& uniforms_buffer_ptr,
-                                               Data::Index frame_index) const;
-    bool Update(double elapsed_seconds, double delta_seconds);
+    ProgramBindingsAndUniformArgumentBinding CreateProgramBindings(const rhi::Buffer& constants_buffer_ptr,
+                                                                   Data::Index frame_index) const;
+    bool Update(double elapsed_seconds, double delta_seconds,
+                rhi::IProgramArgumentBinding& uniforms_argument_binding);
     void Draw(const rhi::RenderCommandList& cmd_list,
-              const gfx::MeshBufferBindings& buffer_bindings,
+              const rhi::ProgramBindings& program_bindings,
               const rhi::ViewState& view_state);
 
 private:

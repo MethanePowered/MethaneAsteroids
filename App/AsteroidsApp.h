@@ -46,20 +46,22 @@ namespace pin = Platform::Input;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    struct MeshBufferBindings : gfx::MeshBufferBindings
+    struct Bindings
     {
+        rhi::ProgramBindings          program_bindings;
         rhi::IProgramArgumentBinding* uniforms_argument_binding_ptr;
     };
 
-    rhi::RenderPass                  asteroids_pass;
-    rhi::ParallelRenderCommandList   parallel_cmd_list;
-    rhi::RenderCommandList           serial_cmd_list;
-    rhi::RenderCommandList           final_cmd_list;
-    rhi::CommandListSet              execute_cmd_list_set;
-    rhi::Buffer                      scene_uniforms_buffer;
-    MeshBufferBindings               sky_box;
-    MeshBufferBindings               planet;
-    gfx::InstancedMeshBufferBindings asteroids;
+    using AsteroidMeshBufferBindings = AsteroidsArray::AsteroidMeshBufferBindings;
+
+    rhi::RenderPass                asteroids_pass;
+    rhi::ParallelRenderCommandList parallel_cmd_list;
+    rhi::RenderCommandList         serial_cmd_list;
+    rhi::RenderCommandList         final_cmd_list;
+    rhi::CommandListSet            execute_cmd_list_set;
+    Bindings                       sky_box;
+    Bindings                       planet;
+    AsteroidMeshBufferBindings     asteroids;
 
     using gfx::AppFrame::AppFrame;
 
@@ -102,21 +104,9 @@ private:
 
     gfx::ActionCamera                 m_view_camera;
     gfx::ActionCamera                 m_light_camera;
-    const float                       m_scene_scale = 15.F;
-    const hlslpp::SceneConstants      m_scene_constants{
-        { 1.F, 1.F, 1.F, 1.F },       // - light_color
-        3.0F,                         // - light_power
-        0.05F,                        // - light_ambient_factor
-        30.F                          // - light_specular_factor
-    };
     AsteroidsArray::Settings          m_asteroids_array_settings;
     uint32_t                          m_asteroids_complexity          = 0U;
     bool                              m_is_parallel_rendering_enabled = true;
-    hlslpp::SceneUniforms             m_scene_uniforms{ };
-    rhi::SubResource                  m_scene_uniforms_subresource{
-        reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms)
-    };
-
     rhi::RenderPattern                m_asteroids_render_pattern;
     rhi::Buffer                       m_const_buffer;
     gfx::SkyBox                       m_sky_box;

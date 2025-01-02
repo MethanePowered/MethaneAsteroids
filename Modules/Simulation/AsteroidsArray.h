@@ -115,6 +115,11 @@ public:
         Parameters               parameters;
     };
 
+    struct AsteroidMeshBufferBindings : gfx::InstancedMeshBufferBindings
+    {
+        std::vector<rhi::IProgramArgumentBinding*> scene_uniforms_binding_ptrs;
+    };
+
     AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
                    const rhi::RenderPattern& render_pattern,
                    const Settings& settings);
@@ -128,10 +133,9 @@ public:
     [[nodiscard]] const Ptr<ContentState>& GetState() const   { return m_content_state_ptr; }
     using BaseBuffers::GetUniformsBufferSize;
 
-    std::vector<rhi::ProgramBindings> CreateProgramBindings(const rhi::Buffer& constants_buffer,
-                                                            const rhi::Buffer& scene_uniforms_buffer,
-                                                            const rhi::Buffer& asteroids_uniforms_buffer,
-                                                            Data::Index frame_index) const;
+    AsteroidMeshBufferBindings CreateProgramBindings(const rhi::Buffer& constants_buffer,
+                                                     const rhi::Buffer& asteroids_uniforms_buffer,
+                                                     Data::Index frame_index) const;
 
     bool Update(double elapsed_seconds, double delta_seconds);
 
