@@ -41,7 +41,6 @@ using AsteroidColorSchema = std::array<gfx::Color3F, Asteroid::color_schema_size
 static gfx::Color3F TransformSrgbToLinear(const gfx::Color3F& srgb_color)
 {
     META_FUNCTION_TASK();
-
     gfx::Color3F linear_color{};
     for (size_t c = 0U; c < gfx::Color3F::Size; ++c)
     {
@@ -53,7 +52,6 @@ static gfx::Color3F TransformSrgbToLinear(const gfx::Color3F& srgb_color)
 static AsteroidColorSchema TransformSrgbToLinear(const AsteroidColorSchema& srgb_color_schema)
 {
     META_FUNCTION_TASK();
-
     AsteroidColorSchema linear_color_schema{};
     for (size_t i = 0; i < srgb_color_schema.size(); ++i)
     {
@@ -66,7 +64,6 @@ Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
     : gfx::IcosahedronMesh<Vertex>(Mesh::VertexLayout(Vertex::layout), 0.5F, subdivisions_count, true)
 {
     META_FUNCTION_TASK();
-
     if (randomize)
     {
         Randomize();
@@ -76,7 +73,6 @@ Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
 void Asteroid::Mesh::Randomize(uint32_t random_seed)
 {
     META_FUNCTION_TASK();
-
     const float noise_scale = 0.5F;
     const float radius_scale = 1.8F;
     const float radius_bias = 0.3F;

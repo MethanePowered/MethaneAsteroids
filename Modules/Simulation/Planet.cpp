@@ -52,41 +52,47 @@ Planet::Planet(const rhi::CommandQueue& render_cmd_queue,
 
 {
     META_FUNCTION_TASK();
-    rhi::RenderState::Settings state_settings;
-    state_settings.program = m_context.CreateProgram(
+    rhi::Program render_program = m_context.CreateProgram(
         rhi::Program::Settings
         {
-            rhi::Program::ShaderSet
+            .shader_set = rhi::Program::ShaderSet
             {
                 { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Planet", "PlanetVS" }, { } } },
                 { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } } }
             },
-            rhi::Program::InputBufferLayouts
+           .input_buffer_layouts = rhi::Program::InputBufferLayouts
             {
                 rhi::Program::InputBufferLayout { mesh.GetVertexLayout().GetSemantics() }
             },
-            rhi::Program::ArgumentAccessors
+            .argument_accessors = rhi::Program::ArgumentAccessors
             {
                 META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::All, "g_uniforms")
             },
-            render_pattern.GetAttachmentFormats()
-        }
-    );
-    state_settings.program.SetName("Planet Shaders");
-    state_settings.render_pattern = render_pattern;
-    state_settings.depth.enabled = true;
-    state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
+            .attachment_formats = render_pattern.GetAttachmentFormats()
+        });
+    render_program.SetName("Planet Shaders");
 
-    m_render_state = m_context.CreateRenderState(state_settings);
+    m_render_state = m_context.CreateRenderState(
+        rhi::RenderState::Settings
+        {
+            .program        = render_program,
+            .render_pattern = render_pattern,
+            .depth          = {
+                .enabled = true,
+                .compare  = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less
+            }
+        });
     m_render_state.SetName("Planet Render State");
     
     m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(render_cmd_queue, m_settings.texture_path, m_settings.image_options, "Planet Texture"));
 
-    m_texture_sampler = m_context.CreateSampler({
-        rhi::Sampler::Filter(rhi::Sampler::Filter::MinMag::Linear),
-        rhi::Sampler::Address(rhi::Sampler::Address::Mode::ClampToEdge),
-        rhi::Sampler::LevelOfDetail(m_settings.lod_bias)
-    });
+    m_texture_sampler = m_context.CreateSampler(
+        rhi::SamplerSettings
+        {
+            .filter  = rhi::Sampler::Filter(rhi::Sampler::Filter::MinMag::Linear),
+            .address = rhi::Sampler::Address(rhi::Sampler::Address::Mode::ClampToEdge),
+            .lod     = rhi::Sampler::LevelOfDetail(m_settings.lod_bias)
+        });
     m_texture_sampler.SetName("Planet Texture Sampler");
 }
 

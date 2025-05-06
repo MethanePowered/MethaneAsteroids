@@ -36,6 +36,7 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 #include <taskflow/algorithm/for_each.hpp>
 #include <future>
 #include <cmath>
+#include <numbers>
 
 namespace Methane::Samples
 {
@@ -43,7 +44,6 @@ namespace Methane::Samples
 static hlslpp::float3 GetRandomDirection(std::mt19937& rng)
 {
     META_FUNCTION_TASK();
-
     std::normal_distribution<float> distribution;
     hlslpp::float3 direction;
     do
@@ -141,12 +141,12 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
             sub_resources = Asteroid::GenerateTextureArraySubResources(settings.texture_dimensions, 3U,
                 Asteroid::TextureNoiseParameters
                 {
-                    static_cast<int>(rng()),
-                    noise_gain_distribution(rng),
-                    noise_fractal_distribution(rng),
-                    noise_lacunarity_distribution(rng),
-                    noise_scale_distribution(rng),
-                    noise_strength_distribution(rng)
+                    .random_seed    = static_cast<int>(rng()),
+                    .gain           = noise_gain_distribution(rng),
+                    .fractal_weight = noise_fractal_distribution(rng),
+                    .lacunarity     = noise_lacunarity_distribution(rng),
+                    .scale          = noise_scale_distribution(rng),
+                    .strength       = noise_strength_distribution(rng)
                 });
         });
     parallel_executor.run(task_flow).get();
@@ -177,11 +177,11 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
 
     for (uint32_t asteroid_index = 0; asteroid_index < settings.instance_count; ++asteroid_index)
     {
-        const uint32_t      asteroid_mesh_index   = mesh_distribution(rng);
-        const float         asteroid_orbit_radius = orbit_radius_distribution(rng);
-        const float         asteroid_orbit_height = orbit_height_distribution(rng);
-        const float         asteroid_scale_ratio  = scale_distribution(rng);
-        const float         asteroid_scale        = asteroid_scale_ratio * settings.scale;
+        const uint32_t       asteroid_mesh_index   = mesh_distribution(rng);
+        const float          asteroid_orbit_radius = orbit_radius_distribution(rng);
+        const float          asteroid_orbit_height = orbit_height_distribution(rng);
+        const float          asteroid_scale_ratio  = scale_distribution(rng);
+        const float          asteroid_scale        = asteroid_scale_ratio * settings.scale;
         const hlslpp::float3 asteroid_scale_ratios = hlslpp::float3(scale_proportion_distribution(rng),
                                                                     scale_proportion_distribution(rng),
                                                                     scale_proportion_distribution(rng)) * asteroid_scale_ratio;
@@ -197,17 +197,17 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
         parameters.emplace_back(
             Asteroid::Parameters
             {
-                asteroid_index,
-                asteroid_mesh_index,
-                settings.textures_array_enabled ? textures_distribution(rng) : 0U,
-                std::move(asteroid_colors),
-                std::move(scale_translate_matrix),
-                GetRandomDirection(rng),
-                asteroid_scale,
-                orbit_velocity_distribution(rng) / (asteroid_scale * asteroid_orbit_radius),
-                spin_velocity_distribution(rng)  / asteroid_scale,
-                gfx::ConstFloat::Pi * normal_distribution(rng),
-                gfx::ConstFloat::Pi * normal_distribution(rng) * 2.F
+                .index                  = asteroid_index,
+                .mesh_instance_index    = asteroid_mesh_index,
+                .texture_index          = settings.textures_array_enabled ? textures_distribution(rng) : 0U,
+                .colors                 = std::move(asteroid_colors),
+                .scale_translate_matrix = std::move(scale_translate_matrix),
+                .spin_axis              = GetRandomDirection(rng),
+                .scale                  = asteroid_scale,
+                .orbit_speed            = orbit_velocity_distribution(rng) / (asteroid_scale * asteroid_orbit_radius),
+                .spin_speed             = spin_velocity_distribution(rng)  / asteroid_scale,
+                .spin_angle_rad         = static_cast<float>(std::numbers::pi) * normal_distribution(rng),
+                .orbit_angle_rad        = static_cast<float>(std::numbers::pi) * normal_distribution(rng) * 2.F
             }
         );
     }
@@ -240,33 +240,37 @@ AsteroidsArray::AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
     const rhi::Shader::MacroDefinitions macro_definitions{ { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
 
-    rhi::RenderState::Settings state_settings;
-    state_settings.program = context.CreateProgram(
+    rhi::Program render_program = context.CreateProgram(
         rhi::Program::Settings
         {
-            rhi::Program::ShaderSet
+            .shader_set = rhi::Program::ShaderSet
             {
                 { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidVS" }, macro_definitions } },
                 { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Asteroids", "AsteroidPS" }, macro_definitions } }
             },
-            rhi::Program::InputBufferLayouts
+            .input_buffer_layouts = rhi::Program::InputBufferLayouts
             {
                 rhi::Program::InputBufferLayout { state.uber_mesh.GetVertexLayout().GetSemantics() }
             },
-            rhi::Program::ArgumentAccessors
+            .argument_accessors = rhi::Program::ArgumentAccessors
             {
                 META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::All, "g_scene_uniforms"),
                 META_PROGRAM_ARG_BUFFER_ADDRESS_MUTABLE(rhi::ShaderType::All, "g_mesh_uniforms")
             },
-            render_pattern.GetAttachmentFormats()
-        }
-    );
-    state_settings.program.SetName("Asteroid Shaders");
-    state_settings.render_pattern = render_pattern;
-    state_settings.depth.enabled = true;
-    state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
-    
-    m_render_state = context.CreateRenderState(state_settings);
+            .attachment_formats = render_pattern.GetAttachmentFormats()
+        });
+    render_program.SetName("Asteroid Shaders");
+
+    m_render_state = context.CreateRenderState(
+        rhi::RenderState::Settings
+        {
+            .program        = render_program,
+            .render_pattern = render_pattern,
+            .depth          = {
+                .enabled    = true,
+                .compare    = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less
+            }
+        });
     m_render_state.SetName("Asteroids Render State");
 
     SetInstanceCount(m_settings.instance_count);
@@ -293,10 +297,12 @@ AsteroidsArray::AsteroidsArray(const rhi::CommandQueue& render_cmd_queue,
         SetSubsetTexture(m_unique_textures[subset_texture_index], subset_index);
     }
     
-    m_texture_sampler = context.CreateSampler({
-        rhi::Sampler::Filter(rhi::Sampler::Filter::MinMag::Linear),
-        rhi::Sampler::Address(rhi::Sampler::Address::Mode::ClampToZero)
-    });
+    m_texture_sampler = context.CreateSampler(
+        rhi::SamplerSettings
+        {
+            .filter  = rhi::Sampler::Filter(rhi::Sampler::Filter::MinMag::Linear),
+            .address = rhi::Sampler::Address(rhi::Sampler::Address::Mode::ClampToZero)
+        });
     m_texture_sampler.SetName("Asteroid Texture Sampler");
 
     // Initialize default uniforms to be ready to render right aways
@@ -316,13 +322,13 @@ AsteroidsArray::AsteroidMeshBufferBindings AsteroidsArray::CreateProgramBindings
     if (m_settings.instance_count == 0)
         return asteroid_mesh_buffer_bindings;
 
-    std::vector<rhi::ProgramBindings>& program_bindings_array = asteroid_mesh_buffer_bindings.program_bindings_per_instance;
-    std::vector<rhi::IProgramArgumentBinding*>& scene_uniforms_binding_ptrs = asteroid_mesh_buffer_bindings.scene_uniforms_binding_ptrs;
-
     const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
     const rhi::ResourceViews face_texture_locations = m_settings.textures_array_enabled
                                                     ? rhi::CreateResourceViews(m_unique_textures)
                                                     : rhi::CreateResourceViews(GetInstanceTexture());
+
+    std::vector<rhi::ProgramBindings>&          program_bindings_array      = asteroid_mesh_buffer_bindings.program_bindings_per_instance;
+    std::vector<rhi::IProgramArgumentBinding*>& scene_uniforms_binding_ptrs = asteroid_mesh_buffer_bindings.scene_uniforms_binding_ptrs;
 
     program_bindings_array.resize(m_settings.instance_count);
     scene_uniforms_binding_ptrs.resize(m_settings.instance_count, nullptr);
@@ -367,8 +373,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Update");
-
-    const float elapsed_radians = gfx::ConstFloat::Pi * static_cast<float>(elapsed_seconds);
+    const float elapsed_radians = static_cast<float>(std::numbers::pi * elapsed_seconds);
 
     tf::Taskflow update_task_flow;
     update_task_flow.for_each(m_content_state_ptr->parameters.begin(), m_content_state_ptr->parameters.end(),
@@ -488,12 +493,12 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
     SetFinalPassUniforms(
         hlslpp::AsteroidUniforms
         {
-            hlslpp::transpose(model_matrix),
-            asteroid_colors.deep.AsVector(),
-            asteroid_colors.shallow.AsVector(),
-            mesh_depth_min,
-            mesh_depth_max,
-            asteroid_parameters.texture_index
+            .model_matrix  = hlslpp::transpose(model_matrix),
+            .deep_color    = asteroid_colors.deep.AsVector(),
+            .shallow_color = asteroid_colors.shallow.AsVector(),
+            .depth_min     = mesh_depth_min,
+            .depth_max     = mesh_depth_max,
+            .texture_index = asteroid_parameters.texture_index
         },
         asteroid_parameters.index
     );

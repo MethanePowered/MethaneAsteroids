@@ -25,7 +25,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include "AsteroidsAppController.h"
 
 #include <Methane/Graphics/AppCameraController.h>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 #include <Methane/Data/AppIconsProvider.h>
 #include <Methane/Instrumentation.h>
 
@@ -102,10 +102,10 @@ static const std::map<pin::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
 
 static const float                  g_scene_scale = 15.F;
 static const hlslpp::SceneConstants g_scene_constants{
-    { 1.F, 1.F, 1.F, 1.F },       // - light_color
-    3.0F,                         // - light_power
-    0.05F,                        // - light_ambient_factor
-    30.F                          // - light_specular_factor
+    .light_color = { 1.F, 1.F, 1.F, 1.F },
+    .light_power = 3.0F,
+    .light_ambient_factor = 0.05F,
+    .light_specular_factor = 30.F
 };
 
 void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
@@ -118,60 +118,60 @@ void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
 AsteroidsApp::AsteroidsApp()
     : UserInterfaceApp(
         Graphics::CombinedAppSettings
-        {                                              // =========================
-            Platform::IApp::Settings {                 // platform_app:
-                "Methane Asteroids",                   //   - name
-                { 0.8, 0.8 },                          //   - size
-                { 640U, 480U },                        //   - min_size
-                false,                                 //   - is_full_screen
-                &Data::IconProvider::Get(),            //   - icon_resources_ptr
-            },                                         // =========================
-            Graphics::IApp::Settings {                 // graphics_app:
-                rhi::RenderPassAccessMask{             //   - screen_pass_access
+        {
+            .platform_app = Platform::AppSettings {
+                .name = "Methane Asteroids",
+                .size = { 0.8, 0.8 },
+                .min_size = { 640U, 480U },
+                .is_full_screen = false,
+                .icon_provider_ptr = &Data::IconProvider::Get(),
+            },
+            .graphics_app = Graphics::AppSettings {
+                .screen_pass_access = rhi::RenderPassAccessMask{
                     rhi::RenderPassAccess::ShaderResources,
                     rhi::RenderPassAccess::Samplers
                 },
-                true,                                  //   - animations_enabled
-                true,                                  //   - show_hud_in_window_title
-                0                                      //   - default_device_index
-            },                                         // =========================
-            rhi::RenderContext::Settings {             // render_context:
-                gfx::FrameSize(),                      //   - frame_size
-                gfx::PixelFormat::BGRA8Unorm,          //   - color_format
-                gfx::PixelFormat::Depth32Float,        //   - depth_stencil_format
-                std::nullopt,                          //   - clear_color
-                gfx::DepthStencilValues(0.F, {}),      //   - clear_depth_stencil
-                3U,                                    //   - frame_buffers_count
-                false,                                 //   - vsync_enabled
-                false,                                 //   - is_full_screen
-                {},                                    //   - options_mask
-                1000U,                                 //   - unsync_max_fps (MacOS only)
-            }                                          // =========================
+                .animations_enabled = true,
+                .show_hud_in_window_title = true,
+                .default_device_index = 0
+            },
+            .render_context = rhi::RenderContext::Settings {
+                .frame_size           = gfx::FrameSize(),
+                .color_format         = gfx::PixelFormat::BGRA8Unorm,
+                .depth_stencil_format = gfx::PixelFormat::Depth32Float,
+                .clear_color          = std::nullopt,
+                .clear_depth_stencil  = gfx::DepthStencilValues(0.F, {}),
+                .frame_buffers_count  = 3U,
+                .vsync_enabled        = false,
+                .is_full_screen       = false,
+                .options_mask         = {},
+                .unsync_max_fps       = 1000U, // (MacOS only)
+            }
         },
-        UserInterface::IApp::Settings
+        UserInterface::AppSettings
         {
-            UserInterface::HeadsUpDisplayMode::UserInterface
+            .heads_up_display_mode = UserInterface::HeadsUpDisplayMode::UserInterface
         },
         "Methane Asteroids sample is demonstrating parallel rendering\nof massive asteroids field dynamic simulation.")
     , m_view_camera(GetAnimations(), gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, GetAnimations(), gfx::ActionCamera::Pivot::Aim)
-    , m_asteroids_array_settings(                       // Asteroids array settings:
-        {                                               // ================
-            m_view_camera,                              // - view_camera
-            g_scene_scale,                              // - scale
-            GetMutableParameters().instances_count,     // - instance_count
-            GetMutableParameters().unique_mesh_count,   // - unique_mesh_count
-            4U,                                         // - subdivisions_count
-            GetMutableParameters().textures_count,      // - textures_count
-            { 256U, 256U },                             // - texture_dimensions
-            1123U,                                      // - random_seed
-            13.F,                                       // - orbit_radius_ratio
-            4.F,                                        // - disc_radius_ratio
-            0.06F,                                      // - mesh_lod_min_screen_size
-            GetMutableParameters().scale_ratio / 10.F,  // - min_asteroid_scale_ratio
-            GetMutableParameters().scale_ratio,         // - max_asteroid_scale_ratio
-            true,                                       // - textures_array_enabled
-            true                                        // - depth_reversed
+    , m_asteroids_array_settings(
+        {
+            .view_camera              = m_view_camera,
+            .scale                    = g_scene_scale,
+            .instance_count           = GetMutableParameters().instances_count,
+            .unique_mesh_count        = GetMutableParameters().unique_mesh_count,
+            .subdivisions_count       = 4U,
+            .textures_count           = GetMutableParameters().textures_count,
+            .texture_dimensions       = { 256U, 256U },
+            .random_seed              = 1123U,
+            .orbit_radius_ratio       = 13.F,
+            .disc_radius_ratio        = 4.F,
+            .mesh_lod_min_screen_size = 0.06F,
+            .min_asteroid_scale_ratio = GetMutableParameters().scale_ratio / 10.F,
+            .max_asteroid_scale_ratio = GetMutableParameters().scale_ratio,
+            .textures_array_enabled = true,
+            .depth_reversed = true
         })
     , m_asteroids_complexity(GetDefaultComplexity())
 {
@@ -195,7 +195,8 @@ AsteroidsApp::AsteroidsApp()
         std::make_shared<gfx::AppCameraController>(m_light_camera, "LIGHT SOURCE",
             gfx::AppCameraController::ActionByMouseButton   { { pin::Mouse::Button::Right, gfx::ActionCamera::MouseAction::Rotate   } },
             gfx::AppCameraController::ActionByKeyboardState { { { pin::Keyboard::Key::LeftControl, pin::Keyboard::Key::L }, gfx::ActionCamera::KeyboardAction::Reset } },
-            gfx::AppCameraController::ActionByKeyboardKey   { }),
+            gfx::AppCameraController::ActionByKeyboardKey   { }
+        )
     });
 
     const std::string options_group = "Asteroids Options";
@@ -219,7 +220,10 @@ AsteroidsApp::AsteroidsApp()
     add_option("-r,--parallel-render", m_is_parallel_rendering_enabled, "parallel rendering enabled")->group(options_group);
 
     // Setup animations
-    GetAnimations().push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidsApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    GetAnimations().push_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
+    {
+        return Animate(elapsed_seconds, delta_seconds);
+    }));
 
     // Enable dry updates on pause to keep asteroids in sync with projection matrix dependent on window size which may change
     GetAnimations().SetDryUpdateOnPauseEnabled(true);
@@ -279,25 +283,30 @@ void AsteroidsApp::Init()
     m_sky_box = gfx::SkyBox(render_cmd_queue, m_asteroids_render_pattern, sky_box_texture,
         gfx::SkyBox::Settings
         {
-            m_view_camera,
-            g_scene_scale * 100.F,
-            { gfx::SkyBox::Option::DepthEnabled, gfx::SkyBox::Option::DepthReversed }
+            .view_camera    = m_view_camera,
+            .scale          = g_scene_scale * 100.F,
+            .render_options = gfx::SkyBox::OptionMask{
+                gfx::SkyBox::Option::DepthEnabled,
+                gfx::SkyBox::Option::DepthReversed
+            }
         });
 
     // Create planet
     m_planet_ptr = std::make_shared<Planet>(render_cmd_queue, m_asteroids_render_pattern, GetImageLoader(),
         Planet::Settings
         {
-            m_view_camera,
-            m_light_camera,
-            "Planet/Mars.jpg",                      // texture_path
-            hlslpp::float3(0.F, 0.F, 0.F),          // position
-            g_scene_scale * 3.F,                    // scale
-            0.1F,                                   // spin_velocity_rps
-            true,                                   // depth_reversed
-            { gfx::ImageOption::Mipmapped,          // image_options
-              gfx::ImageOption::SrgbColorSpace },   //
-            -1.F,                                   // lod_bias
+            .view_camera       = m_view_camera,
+            .light_camera      = m_light_camera,
+            .texture_path      = "Planet/Mars.jpg",
+            .position          = hlslpp::float3(0.F, 0.F, 0.F),
+            .scale             = g_scene_scale * 3.F,
+            .spin_velocity_rps = 0.1F,
+            .depth_reversed    = true,
+            .image_options     = gfx::ImageLoader::OptionMask{
+                gfx::ImageOption::Mipmapped,
+                gfx::ImageOption::SrgbColorSpace
+            },
+            .lod_bias = -1.F,
         }
     );
 

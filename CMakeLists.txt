@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21.0)
 # Methane version, build & product info
 set(ASTEROIDS_VERSION_MAJOR 0 CACHE STRING "Asteroids major version")
 set(ASTEROIDS_VERSION_MINOR 8 CACHE STRING "Asteroids minor version")
-set(ASTEROIDS_VERSION_PATCH 0 CACHE STRING "Asteroids patch version")
+set(ASTEROIDS_VERSION_PATCH 1 CACHE STRING "Asteroids patch version")
 set(ASTEROIDS_VERSION_BUILD 0 CACHE STRING "Asteroids build version")
 
 project(METHANE_ASTEROIDS
@@ -17,7 +17,7 @@ if (POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW) # option honors normal variables
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 

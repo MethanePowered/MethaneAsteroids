@@ -52,41 +52,42 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
     const uint32_t asteroids_complexity = m_asteroids_app.GetAsteroidsComplexity();
     switch(action)
     {
-    case AsteroidsAppAction::SwitchParallelRendering:
+    using enum AsteroidsAppAction;
+    case SwitchParallelRendering:
         m_asteroids_app.SetParallelRenderingEnabled(!m_asteroids_app.IsParallelRenderingEnabled());
         break;
 
-    case AsteroidsAppAction::SwitchMeshLodsColoring:
+    case SwitchMeshLodsColoring:
         m_asteroids_app.GetAsteroidsArray().SetMeshLodColoringEnabled(!m_asteroids_app.GetAsteroidsArray().IsMeshLodColoringEnabled());
         break;
 
-    case AsteroidsAppAction::IncreaseMeshLodComplexity:
+    case IncreaseMeshLodComplexity:
         m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() / 2.F);
         break;
 
-    case AsteroidsAppAction::DecreaseMeshLodComplexity:
+    case DecreaseMeshLodComplexity:
         m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() * 2.F);
         break;
 
-    case AsteroidsAppAction::IncreaseComplexity:
+    case IncreaseComplexity:
         m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity + 1);
         break;
 
-    case AsteroidsAppAction::DecreaseComplexity:
+    case DecreaseComplexity:
         m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity > 1 ? asteroids_complexity - 1 : 0);
         break;
 
-    case AsteroidsAppAction::SetComplexity0:
-    case AsteroidsAppAction::SetComplexity1:
-    case AsteroidsAppAction::SetComplexity2:
-    case AsteroidsAppAction::SetComplexity3:
-    case AsteroidsAppAction::SetComplexity4:
-    case AsteroidsAppAction::SetComplexity5:
-    case AsteroidsAppAction::SetComplexity6:
-    case AsteroidsAppAction::SetComplexity7:
-    case AsteroidsAppAction::SetComplexity8:
-    case AsteroidsAppAction::SetComplexity9:
-        m_asteroids_app.SetAsteroidsComplexity(static_cast<uint32_t>(action) - static_cast<uint32_t>(AsteroidsAppAction::SetComplexity0));
+    case SetComplexity0:
+    case SetComplexity1:
+    case SetComplexity2:
+    case SetComplexity3:
+    case SetComplexity4:
+    case SetComplexity5:
+    case SetComplexity6:
+    case SetComplexity7:
+    case SetComplexity8:
+    case SetComplexity9:
+        m_asteroids_app.SetAsteroidsComplexity(static_cast<uint32_t>(action) - static_cast<uint32_t>(SetComplexity0));
         break;
         
     default:
@@ -99,22 +100,23 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
     META_FUNCTION_TASK();
     switch(action)
     {
-    case AsteroidsAppAction::SwitchParallelRendering:   return "switch parallel rendering";
-    case AsteroidsAppAction::SwitchMeshLodsColoring:    return "switch mesh LOD coloring";
-    case AsteroidsAppAction::IncreaseMeshLodComplexity: return "increase mesh LOD complexity";
-    case AsteroidsAppAction::DecreaseMeshLodComplexity: return "decrease mesh LOD complexity";
-    case AsteroidsAppAction::IncreaseComplexity:        return "increase scene complexity";
-    case AsteroidsAppAction::DecreaseComplexity:        return "decrease scene complexity";
-    case AsteroidsAppAction::SetComplexity0:            return "set 0 scene complexity";
-    case AsteroidsAppAction::SetComplexity1:            return "set 1 scene complexity";
-    case AsteroidsAppAction::SetComplexity2:            return "set 2 scene complexity";
-    case AsteroidsAppAction::SetComplexity3:            return "set 3 scene complexity";
-    case AsteroidsAppAction::SetComplexity4:            return "set 4 scene complexity";
-    case AsteroidsAppAction::SetComplexity5:            return "set 5 scene complexity";
-    case AsteroidsAppAction::SetComplexity6:            return "set 6 scene complexity";
-    case AsteroidsAppAction::SetComplexity7:            return "set 7 scene complexity";
-    case AsteroidsAppAction::SetComplexity8:            return "set 8 scene complexity";
-    case AsteroidsAppAction::SetComplexity9:            return "set 9 scene complexity";
+    using enum AsteroidsAppAction;
+    case SwitchParallelRendering:   return "switch parallel rendering";
+    case SwitchMeshLodsColoring:    return "switch mesh LOD coloring";
+    case IncreaseMeshLodComplexity: return "increase mesh LOD complexity";
+    case DecreaseMeshLodComplexity: return "decrease mesh LOD complexity";
+    case IncreaseComplexity:        return "increase scene complexity";
+    case DecreaseComplexity:        return "decrease scene complexity";
+    case SetComplexity0:            return "set 0 scene complexity";
+    case SetComplexity1:            return "set 1 scene complexity";
+    case SetComplexity2:            return "set 2 scene complexity";
+    case SetComplexity3:            return "set 3 scene complexity";
+    case SetComplexity4:            return "set 4 scene complexity";
+    case SetComplexity5:            return "set 5 scene complexity";
+    case SetComplexity6:            return "set 6 scene complexity";
+    case SetComplexity7:            return "set 7 scene complexity";
+    case SetComplexity8:            return "set 8 scene complexity";
+    case SetComplexity9:            return "set 9 scene complexity";
     default:                                            META_UNEXPECTED_RETURN(action, "");
     }
 }
