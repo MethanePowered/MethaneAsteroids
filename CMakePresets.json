@@ -320,6 +320,10 @@
             "name": "VS2022-Win32",
             "hidden": true,
             "generator": "Visual Studio 17 2022",
+            "architecture": {
+                "value": "Win32",
+                "strategy": "set"
+            },
             "vendor": {
                 "jetbrains.com/clion": {
                     "toolchain": "Visual Studio 2022 x86"
@@ -405,6 +409,119 @@
             "inherits": [
                 "Ninja-Profile-Vulkan",
                 "VS2022-Win32"
+            ]
+        },
+
+        {
+            "name": "VS2026-Win64",
+            "hidden": true,
+            "generator": "Visual Studio 18 2026",
+            "architecture": {
+                "value": "x64",
+                "strategy": "set"
+            },
+            "vendor": {
+                "jetbrains.com/clion": {
+                    "toolchain": "Visual Studio 2026 x64"
+                }
+            },
+            "inherits": [
+                "Ninja-Win-Default"
+            ]
+        },
+        {
+            "name": "VS2026-Win32",
+            "hidden": true,
+            "generator": "Visual Studio 18 2026",
+            "architecture": {
+                "value": "Win32",
+                "strategy": "set"
+            },
+            "vendor": {
+                "jetbrains.com/clion": {
+                    "toolchain": "Visual Studio 2026 x86"
+                }
+            },
+            "inherits": [
+                "Ninja-Win-Default"
+            ]
+        },
+
+        {
+            "name": "VS2026-Win64-DX-Default",
+            "displayName": "Default - VS2026 - Windows x64 (DirectX)",
+            "description": "Default configuration using Visual Studio 2026 generator for Windows x64 (DirectX)",
+            "inherits": [
+                "VS2026-Win64"
+            ]
+        },
+        {
+            "name": "VS2026-Win32-DX-Default",
+            "displayName": "Default - VS2026 - Windows x86 (DirectX)",
+            "description": "Default configuration using Visual Studio 2026 generator for Windows x86 (DirectX)",
+            "inherits": [
+                "VS2026-Win32"
+            ]
+        },
+        {
+            "name": "VS2026-Win64-VK-Default",
+            "displayName": "Default - VS2026 - Windows x64 (Vulkan)",
+            "description": "Default configuration using Visual Studio 2026 generator for Windows x64 (Vulkan)",
+            "generator": "Visual Studio 18 2026",
+            "inherits": [
+                "Ninja-Default-Vulkan",
+                "VS2026-Win64"
+            ]
+        },
+        {
+            "name": "VS2026-Win32-VK-Default",
+            "displayName": "Default - VS2026 - Windows x86 (Vulkan)",
+            "description": "Default configuration using Visual Studio 2026 generator for Windows x86 (Vulkan)",
+            "generator": "Visual Studio 18 2026",
+            "inherits": [
+                "Ninja-Default-Vulkan",
+                "VS2026-Win32"
+            ]
+        },
+
+        {
+            "name": "VS2026-Win64-DX-Profile",
+            "displayName": "Profile - VS2026 - Windows x64 (DirectX)",
+            "description": "Profile configuration using Visual Studio 2026 generator for Windows x64 (DirectX)",
+            "generator": "Visual Studio 18 2026",
+            "inherits": [
+                "Ninja-Profile",
+                "VS2026-Win64"
+            ]
+        },
+        {
+            "name": "VS2026-Win32-DX-Profile",
+            "displayName": "Profile - VS2026 - Windows x86 (DirectX)",
+            "description": "Profile configuration using Visual Studio 2026 generator for Windows x86 (DirectX)",
+            "generator": "Visual Studio 18 2026",
+            "inherits": [
+                "Ninja-Profile",
+                "VS2026-Win32"
+            ]
+        },
+        {
+            "name": "VS2026-Win64-VK-Profile",
+            "displayName": "Profile - VS2026 - Windows x64 (Vulkan)",
+            "description": "Profile configuration using Visual Studio 2026 generator for Windows x64 (Vulkan)",
+            "generator": "Visual Studio 18 2026",
+            "inherits": [
+                "Ninja-Profile-Vulkan",
+                "VS2026-Win64"
+            ]
+        },
+        {
+            "name": "VS2026-Win32-VK-Profile",
+            "displayName": "Profile - VS2026 - Windows x86 (Vulkan)",
+            "description": "Profile configuration using Visual Studio 2026 generator for Windows x86 (Vulkan)",
+            "generator": "Visual Studio 18 2026",
+            "inherits": [
+                "Ninja-Profile-Vulkan",
+                "VS2026-Win32"
             ]
         },
 
@@ -853,6 +970,104 @@
             "description": "Profiling build with Visual Studio 2022 for Windows x86 (Vulkan)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2022-Win32-VK-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+
+        {
+            "name": "VS2026-Win64-DX-Debug",
+            "displayName": "Debug - VS2026 - Windows x64 (DirectX)",
+            "description": "Debug build with Visual Studio 2026 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win64-DX-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2026-Win32-DX-Debug",
+            "displayName": "Debug - VS2026 - Windows x86 (DirectX)",
+            "description": "Debug build with Visual Studio 2026 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win32-DX-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2026-Win64-DX-Release",
+            "displayName": "Release - VS2026 - Windows x64 (DirectX)",
+            "description": "Release build with Visual Studio 2026 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win64-DX-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2026-Win32-DX-Release",
+            "displayName": "Release - VS2026 - Windows x86 (DirectX)",
+            "description": "Release build with Visual Studio 2026 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win32-DX-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2026-Win64-DX-Profile",
+            "displayName": "Profile - VS2026 - Windows x64 (DirectX)",
+            "description": "Profiling build with Visual Studio 2026 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win64-DX-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "VS2026-Win32-DX-Profile",
+            "displayName": "Profile - VS2026 - Windows x86 (DirectX)",
+            "description": "Profiling build with Visual Studio 2026 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win32-DX-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+
+        {
+            "name": "VS2026-Win64-VK-Debug",
+            "displayName": "Debug - VS2026 - Windows x64 (Vulkan)",
+            "description": "Debug build with Visual Studio 2026 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win64-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2026-Win32-VK-Debug",
+            "displayName": "Debug - VS2026 - Windows x86 (Vulkan)",
+            "description": "Debug build with Visual Studio 2026 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win32-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2026-Win64-VK-Release",
+            "displayName": "Release - VS2026 - Windows x64 (Vulkan)",
+            "description": "Release build with Visual Studio 2026 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win64-VK-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2026-Win32-VK-Release",
+            "displayName": "Release - VS2026 - Windows x86 (Vulkan)",
+            "description": "Release build with Visual Studio 2026 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win32-VK-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2026-Win64-VK-Profile",
+            "displayName": "Profile - VS2026 - Windows x64 (Vulkan)",
+            "description": "Profiling build with Visual Studio 2026 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win64-VK-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "VS2026-Win32-VK-Profile",
+            "displayName": "Profile - VS2026 - Windows x86 (Vulkan)",
+            "description": "Profiling build with Visual Studio 2026 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2026-Win32-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
 

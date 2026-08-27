@@ -98,7 +98,14 @@ float PerlinNoise::GetWeightsSum(const PerlinNoise::Weights& weights) noexcept
 const FastNoise::Simplex& PerlinNoise::GetSimplexNoise() const
 {
     META_FUNCTION_TASK();
-    static const auto s_simplex_noise_ptr = FastNoise::New<FastNoise::Simplex>();
+    static const auto s_simplex_noise_ptr = []()
+    {
+        auto simplex_ptr = FastNoise::New<FastNoise::Simplex>();
+        simplex_ptr->SetOutputMin(0.0);
+        simplex_ptr->SetOutputMax(1.0);
+        simplex_ptr->SetScale(0.1);
+        return simplex_ptr;
+    }();
     return *s_simplex_noise_ptr;
 }
 

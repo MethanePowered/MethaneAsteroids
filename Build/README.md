@@ -24,7 +24,7 @@
   - Windows 10 SDK (latest)
   - Visual C++ ATL Support (required by DXC)
 - **Linux**
-  - Ubuntu 20.04 or later
+  - Ubuntu 24.04 or later
   - GCC 9 or later
   - X11, XCB, LCov (optional for code coverage) libraries
   ```console
@@ -75,7 +75,7 @@ to generate Visual Studio 2022 solution:
 
 ```console
 set OUTPUT_DIR=Build\Output\VisualStudio\Win64-DX
-cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
+cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 18 2026" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
 cmake --build %OUTPUT_DIR%\Build --config Release --target install
 ```
 
@@ -84,7 +84,7 @@ Vulkan graphics API can be used instead by adding cmake generator option `-DMETH
 Auxiliary build script [Build/Windows/Build.bat](/Build/Windows/Build.bat) can make it more simple for you:
 
 ```console
-./Build/Windows/Build.bat [--vs2019] [--win32] [--debug] [--vulkan] [--graphviz] [--analyze SONAR_TOKEN]
+./Build/Windows/Build.bat [--vs2022] [--win32] [--debug] [--vulkan] [--graphviz] [--analyze SONAR_TOKEN]
 ```
 
 Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in Visual Studio or 

@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/../ExternalsCache/freetype2/f344d7b284a635efcd1c1111639de1442c0fbe6a/subprojects/dlg" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/boostnowide/37e9d3853fc4a1e2de3eee207ea766555faa1c43" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/cli11/45ea9f18a5fb4a47102d7729dcaa3bf4acdba1df" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/cmakemodules/1e9f4dc1ee1961639df5761dc3d78ff9f14e38e0" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/cmrc/d29bc62762637418ef0c5c6042df10238357da4c" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/directxshadercompilerbinary/11d794290fa9540329c8b626982037a2c40de098" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/fastnoise2/59e94d2fc235a4331ffab837b1bcc1414c61d1db" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/fmt/bf7b3c54d3614ba367187ac0da39070c73031ab3" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/freetype2/f344d7b284a635efcd1c1111639de1442c0fbe6a" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/freetype2/f344d7b284a635efcd1c1111639de1442c0fbe6a/subprojects/dlg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/hlslpp/9093ade73989f5f8b251239dfb01bfe5c8217e7e" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/ittapi/f156daf94a53f53dd040e0548beb25b531ab06fb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/magicenum/b1e791b02d60d4a7f822afa374bfd3d1818e363d" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/methanekit/b80a5fcdbcc0c5c16005042c62c2771b4e833f13" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/spirvcrossbinary/3dc2eb1bed12e07f4150764a60c01ffe2e883547" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/stb/600bf25e48928e18d35f5a09e429ac2ecc08f51c" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Build/Output/ExternalsCache/taskflow/27ef947da6b218b32433c194acd6c21323a107ee" vcs="Git" />
   </component>
 </project>
