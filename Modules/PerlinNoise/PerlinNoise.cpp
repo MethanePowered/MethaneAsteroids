@@ -101,9 +101,9 @@ const FastNoise::Simplex& PerlinNoise::GetSimplexNoise() const
     static const auto s_simplex_noise_ptr = []()
     {
         auto simplex_ptr = FastNoise::New<FastNoise::Simplex>();
-        simplex_ptr->SetOutputMin(0.0);
-        simplex_ptr->SetOutputMax(1.0);
-        simplex_ptr->SetScale(0.1);
+        simplex_ptr->SetOutputMin(0.f);
+        simplex_ptr->SetOutputMax(1.f);
+        simplex_ptr->SetScale(0.1f);
         return simplex_ptr;
     }();
     return *s_simplex_noise_ptr;
