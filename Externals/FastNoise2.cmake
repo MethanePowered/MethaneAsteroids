@@ -8,9 +8,12 @@ CPMAddPackage(
         "FASTNOISE2_UTILITY OFF"
 )
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    target_compile_options(FastSIMD_FastNoise
-            PRIVATE
+if (NOT MSVC AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # FastSIMD public headers compare SIMD register types like "__m128" with std::is_same_v,
+    # which makes GCC and Clang warn about vector attributes being ignored on template arguments.
+    # Suppress it on the FastSIMD target so that it propagates to all its consumers.
+    target_compile_options(FastSIMD
+        PRIVATE
             -Wno-ignored-attributes
     )
 endif()
