@@ -1,5 +1,5 @@
 @REM Run 'Build.bat' with optional arguments:
-@REM   --vs2019      - build with Visual Studio 2019 instead of Visual Studio 2022 by default
+@REM   --vs2022      - build with Visual Studio 2022 instead of Visual Studio 2026 by default
 @REM   --win32       - 32-bit build instead of 64-bit by default
 @REM   --debug       - Debug build instead of Release build by default
 @REM   --vulkan      - use Vulkan graphics API instead of DirectX 12 by default
@@ -14,7 +14,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 
 SET BUILD_VERSION_MAJOR=0
 SET BUILD_VERSION_MINOR=8
-SET BUILD_VERSION_PATCH=1
+SET BUILD_VERSION_PATCH=2
 SET BUILD_VERSION=%BUILD_VERSION_MAJOR%.%BUILD_VERSION_MINOR%.%BUILD_VERSION_PATCH%
 
 SET OUTPUT_DIR=%~dp0..\Output
@@ -24,8 +24,8 @@ SET START_DIR=%cd%
 REM Parse command line options
 :options_loop
 IF NOT "%1"=="" (
-    IF "%1"=="--vs2019" (
-        SET USE_VS2019=1
+    IF "%1"=="--vs2022" (
+        SET USE_VS2022=1
     )
     IF "%1"=="--win32" (
         SET WIN32_BUILD=1
@@ -79,10 +79,10 @@ IF DEFINED DEBUG_BUILD (
     SET BUILD_TYPE=Release
 )
 
-IF DEFINED USE_VS2019 (
-    SET CMAKE_GENERATOR=Visual Studio 16 2019
-) ELSE (
+IF DEFINED USE_VS2022 (
     SET CMAKE_GENERATOR=Visual Studio 17 2022
+) ELSE (
+    SET CMAKE_GENERATOR=Visual Studio 18 2026
 )
 
 IF NOT DEFINED TRACY_ENABLED (
