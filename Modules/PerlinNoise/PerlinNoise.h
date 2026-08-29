@@ -28,6 +28,8 @@ Multi-octave simplex noise generator in range [0, 1]
 
 #include <vector>
 
+#include "FastNoise/Utility/SmartNode.h"
+
 namespace FastNoise
 {
     class Simplex;
@@ -56,7 +58,6 @@ private:
     [[nodiscard]] float GetValue(VectorType v) const noexcept;
     [[nodiscard]] static Weights GetWeights(float persistence, size_t octaves_count) noexcept;
     [[nodiscard]] static float GetWeightsSum(const PerlinNoise::Weights& weights) noexcept;
-    [[nodiscard]] const FastNoise::Simplex& GetSimplexNoise() const;
 
     const Weights m_weights;
     const float   m_norm_multiplier;

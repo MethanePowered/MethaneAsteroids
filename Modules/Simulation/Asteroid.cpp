@@ -30,6 +30,7 @@ Random generated asteroid model with mesh and texture ready for rendering
 #include <PerlinNoise.h>
 #include <FastNoise/FastNoise.h>
 
+#include <algorithm>
 #include <cmath>
 #include <random>
 
@@ -240,33 +241,63 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
                                         const TextureNoiseParameters& noise_parameters)
 {
     META_FUNCTION_TASK();
-    static const auto fractal_noise = [noise_parameters]() {
-        auto noise = FastNoise::New<FastNoise::FractalFBm>();
-        noise->SetSource(FastNoise::New<FastNoise::Simplex>());
-        noise->SetGain(noise_parameters.gain);
-        noise->SetWeightedStrength(noise_parameters.fractal_weight);
-        noise->SetOctaveCount(4);
-        noise->SetLacunarity(noise_parameters.lacunarity);
-        return noise;
+    META_CHECK_NOT_ZERO(dimensions.GetWidth());
+    META_CHECK_NOT_ZERO(dimensions.GetHeight());
+    META_CHECK_GREATER_OR_EQUAL(row_stride, dimensions.GetWidth() * 3U);
+    META_CHECK_GREATER_OR_EQUAL(texture_data.size(), static_cast<size_t>(row_stride) * dimensions.GetHeight());
+
+    // Fractal Brownian Motion of the Perlin (Simplex) noise:
+    // generator node is immutable and its generation methods are thread-safe,
+    // so it is created once and reused by all texture generation tasks running in parallel.
+    static const auto s_fbm_noise_ptr = [&noise_parameters]()
+    {
+        auto simplex_noise_ptr = FastNoise::New<FastNoise::Simplex>();
+        simplex_noise_ptr->SetScale(1.F); // noise feature size in generation coordinates
+        simplex_noise_ptr->SetOutputMin(0.F);
+        simplex_noise_ptr->SetOutputMax(1.F);
+
+        auto fbm_noise_ptr = FastNoise::New<FastNoise::FractalFBm>();
+        fbm_noise_ptr->SetSource(simplex_noise_ptr);
+        fbm_noise_ptr->SetOctaveCount(noise_parameters.octave_count);
+        fbm_noise_ptr->SetGain(noise_parameters.gain);
+        fbm_noise_ptr->SetLacunarity(noise_parameters.lacunarity);
+        fbm_noise_ptr->SetWeightedStrength(noise_parameters.fractal_weight);
+        return fbm_noise_ptr;
     }();
 
-    std::vector<float> noise_values(dimensions.GetPixelsCount());
+    const uint32_t width  = dimensions.GetWidth();
+    const uint32_t height = dimensions.GetHeight();
 
-    for (size_t row = 0; row < dimensions.GetHeight(); ++row)
+    // Generate noise for all texels at once with a batched SIMD-accelerated call;
+    // step sizes keep the number of base octave features independent of the texture resolution.
+    std::vector<float> noise_values(static_cast<size_t>(width) * height);
+    const FastNoise::OutputMinMax noise_min_max = s_fbm_noise_ptr->GenUniformGrid2D(
+        noise_values.data(), 0.F, 0.F,
+        static_cast<int>(width), static_cast<int>(height),
+        1.f / noise_parameters.scale,
+        1.f / noise_parameters.scale,
+        noise_parameters.random_seed);
+
+    // FBM output range depends on the octaves count and gain,
+    // so generated values are normalized to the [0, 255] color channel range with the actually generated range.
+    const float noise_range      = noise_min_max.max - noise_min_max.min;
+    const float noise_multiplier = noise_range > 0.F ? 255.F / noise_range : 0.F;
+    const uint32_t pixel_stride  = row_stride / width;
+
+    for (uint32_t row = 0; row < height; ++row)
     {
-        auto row_data = reinterpret_cast<uint32_t*>(texture_data.data() + row * row_stride); // NOSONAR
-        
-        for (size_t col = 0; col < dimensions.GetWidth(); ++col)
-        {
-            const float noise_intensity = fractal_noise->GenSingle2D(noise_parameters.scale * static_cast<float>(row),
-                                                                     noise_parameters.scale * static_cast<float>(col),
-                                                                     noise_parameters.random_seed);
+        std::byte*   row_data       = texture_data.data() + static_cast<size_t>(row) * row_stride;
+        const float* row_noise_data = noise_values.data() + static_cast<size_t>(row) * width;
 
-            auto texel_data = reinterpret_cast<std::byte*>(&row_data[col]); // NOSONAR
-            for (size_t channel = 0; channel < 3; ++channel)
-            {
-                texel_data[channel] = static_cast<std::byte>(255.F * noise_intensity);
-            }
+        for (uint32_t col = 0; col < width; ++col)
+        {
+            const float noise_intensity = (row_noise_data[col] - noise_min_max.min) * noise_multiplier;
+            const auto  channel_value   = static_cast<std::byte>(static_cast<uint8_t>(std::min(255.F, noise_intensity)));
+
+            std::byte* texel_data = row_data + static_cast<size_t>(col) * pixel_stride;
+            texel_data[0] = channel_value; // Red
+            texel_data[1] = channel_value; // Green
+            texel_data[2] = channel_value; // Blue
         }
     }
 }

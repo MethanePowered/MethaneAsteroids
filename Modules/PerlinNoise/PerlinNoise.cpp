@@ -30,6 +30,20 @@ Multi-octave simplex noise generator in range [0, 1]
 namespace Methane::Graphics
 {
 
+static const FastNoise::Simplex& GetSimplexNoise()
+{
+    META_FUNCTION_TASK();
+    static const auto s_simplex_noise_ptr = []()
+    {
+        auto simplex_ptr = FastNoise::New<FastNoise::Simplex>();
+        simplex_ptr->SetOutputMin(0.f);
+        simplex_ptr->SetOutputMax(1.f);
+        simplex_ptr->SetScale(0.1f);
+        return simplex_ptr;
+    }();
+    return *s_simplex_noise_ptr;
+}
+
 template<typename VectorType>
 float GetPerlinNoise(const FastNoise::Simplex& simplex_noise, const VectorType& pos, int seed) noexcept;
 
@@ -93,20 +107,6 @@ float PerlinNoise::GetWeightsSum(const PerlinNoise::Weights& weights) noexcept
         weights_sum += weight;
     }
     return weights_sum;
-}
-
-const FastNoise::Simplex& PerlinNoise::GetSimplexNoise() const
-{
-    META_FUNCTION_TASK();
-    static const auto s_simplex_noise_ptr = []()
-    {
-        auto simplex_ptr = FastNoise::New<FastNoise::Simplex>();
-        simplex_ptr->SetOutputMin(0.f);
-        simplex_ptr->SetOutputMax(1.f);
-        simplex_ptr->SetScale(0.1f);
-        return simplex_ptr;
-    }();
-    return *s_simplex_noise_ptr;
 }
 
 } // namespace Methane::Graphics
