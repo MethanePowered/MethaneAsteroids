@@ -301,23 +301,20 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
     META_CHECK_GREATER_OR_EQUAL(texture_data.size(), static_cast<size_t>(row_stride) * dimensions.GetHeight());
 
     // Fractal Brownian Motion of the Perlin (Simplex) noise:
-    // generator node is immutable and its generation methods are thread-safe,
-    // so it is created once and reused by all texture generation tasks running in parallel.
-    static const auto s_fbm_noise_ptr = [&noise_parameters]()
-    {
-        auto simplex_noise_ptr = FastNoise::New<FastNoise::Simplex>();
-        simplex_noise_ptr->SetScale(1.F); // noise feature size in generation coordinates
-        simplex_noise_ptr->SetOutputMin(0.F);
-        simplex_noise_ptr->SetOutputMax(1.F);
+    // fractal parameters are randomized per texture, so the node tree can not be shared and is created
+    // for each texture; node creation and generation are both thread-safe, which is required because
+    // asteroid textures are generated in parallel tasks.
+    auto simplex_noise_ptr = FastNoise::New<FastNoise::Simplex>();
+    simplex_noise_ptr->SetScale(1.F); // noise feature size in generation coordinates
+    simplex_noise_ptr->SetOutputMin(0.F);
+    simplex_noise_ptr->SetOutputMax(1.F);
 
-        auto fbm_noise_ptr = FastNoise::New<FastNoise::FractalFBm>();
-        fbm_noise_ptr->SetSource(simplex_noise_ptr);
-        fbm_noise_ptr->SetOctaveCount(noise_parameters.octave_count);
-        fbm_noise_ptr->SetGain(noise_parameters.gain);
-        fbm_noise_ptr->SetLacunarity(noise_parameters.lacunarity);
-        fbm_noise_ptr->SetWeightedStrength(noise_parameters.fractal_weight);
-        return fbm_noise_ptr;
-    }();
+    auto fbm_noise_ptr = FastNoise::New<FastNoise::FractalFBm>();
+    fbm_noise_ptr->SetSource(simplex_noise_ptr);
+    fbm_noise_ptr->SetOctaveCount(noise_parameters.octave_count);
+    fbm_noise_ptr->SetGain(noise_parameters.gain);
+    fbm_noise_ptr->SetLacunarity(noise_parameters.lacunarity);
+    fbm_noise_ptr->SetWeightedStrength(noise_parameters.fractal_weight);
 
     const uint32_t width  = dimensions.GetWidth();
     const uint32_t height = dimensions.GetHeight();
@@ -325,7 +322,7 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
     // Generate noise for all texels at once with a batched SIMD-accelerated call;
     // step sizes keep the number of base octave features independent of the texture resolution.
     std::vector<float> noise_values(static_cast<size_t>(width) * height);
-    const FastNoise::OutputMinMax noise_min_max = s_fbm_noise_ptr->GenUniformGrid2D(
+    const FastNoise::OutputMinMax noise_min_max = fbm_noise_ptr->GenUniformGrid2D(
         noise_values.data(), 0.F, 0.F,
         static_cast<int>(width), static_cast<int>(height),
         1.f / noise_parameters.scale,

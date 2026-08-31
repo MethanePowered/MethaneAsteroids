@@ -85,10 +85,8 @@ environment, to avoid cache collisions across CLion's parallel configurations.
 
 ## Code structure
 
-Three targets, bottom-up:
+Two targets, bottom-up:
 
-- **`MethanePerlinNoise`** ([Modules/PerlinNoise](Modules/PerlinNoise)) — thin wrapper over FastNoise2
-  used for procedural asteroid textures.
 - **`MethaneAsteroidsSimulation`** ([Modules/Simulation](Modules/Simulation)) — the content: `Asteroid`
   (one procedurally generated icosahedron-based mesh + triplanar noise texture array),
   `AsteroidsArray` (an "uber mesh" of up to ~1000 unique meshes with per-instance parameters, LOD

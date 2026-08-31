@@ -16,11 +16,11 @@
 ## Prerequisites
 
 - **Common**
-  - [CMake](https://cmake.org/download/) 3.24 or later
+  - [CMake](https://cmake.org/download/) 3.24 or later (4.2 or later is required by the `Visual Studio 18 2026` generator and `VS2026-*` presets)
   - [Git](https://git-scm.com/downloads) (is required to fetch external dependent repositories using CPM)
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
-  - Visual Studio 2026 with MSVC v143 or later
+  - Visual Studio 2026 with MSVC v145 or Visual Studio 2022 with MSVC v143
   - Windows 10 SDK (latest)
   - Visual C++ ATL Support (required by DXC)
 - **Linux**
@@ -71,7 +71,8 @@ git pull
 
 Start Command Prompt, go to `MethaneAsteroids` root directory and either start auxiliary build script
  or build with CMake command line
-to generate Visual Studio 2022 solution:
+to generate Visual Studio 2026 solution (requires CMake 4.2 or later,
+use `-G "Visual Studio 17 2022"` generator with the older CMake versions):
 
 ```console
 set OUTPUT_DIR=Build\Output\VisualStudio\Win64-DX
@@ -193,7 +194,8 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
 
 ### CMake Presets
 
-[CMake Presets](/CMakePresets.json) can be used to configure and build project with a set of predefined options (CMake 3.20 is required):
+[CMake Presets](/CMakePresets.json) can be used to configure and build project with a set of predefined options
+(CMake 3.24 is required, `VS2026-*` presets require CMake 4.2):
 ```console
 cmake --preset [ConfigPresetName]
 cmake --build --preset [BuildPresetName] --target install

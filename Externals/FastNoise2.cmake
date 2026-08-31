@@ -9,9 +9,10 @@ CPMAddPackage(
 )
 
 if (NOT MSVC AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    # FastSIMD public headers compare SIMD register types like "__m128" with std::is_same_v,
+    # FastSIMD SIMD tool-set headers compare register types like "__m128" with std::is_same_v,
     # which makes GCC and Clang warn about vector attributes being ignored on template arguments.
-    # Suppress it on the FastSIMD target so that it propagates to all its consumers.
+    # These headers are included by the FastSIMD sources only (FastNoise2 public headers reach
+    # "FastSIMD/DispatchClass.h" at most), so the suppression is not needed by the library consumers.
     target_compile_options(FastSIMD
         PRIVATE
             -Wno-ignored-attributes
