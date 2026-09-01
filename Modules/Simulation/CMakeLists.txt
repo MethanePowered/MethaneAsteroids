@@ -20,7 +20,6 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneKit
     PRIVATE
-        MethanePerlinNoise
         MethaneBuildOptions
         TaskFlow
         FastNoise2

@@ -16,15 +16,15 @@
 ## Prerequisites
 
 - **Common**
-  - [CMake](https://cmake.org/download/) 3.24 or later
+  - [CMake](https://cmake.org/download/) 3.24 or later (4.2 or later is required by the `Visual Studio 18 2026` generator and `VS2026-*` presets)
   - [Git](https://git-scm.com/downloads) (is required to fetch external dependent repositories using CPM)
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
-  - Visual Studio 2022 with MSVC v143 or later
+  - Visual Studio 2026 with MSVC v145 or Visual Studio 2022 with MSVC v143
   - Windows 10 SDK (latest)
   - Visual C++ ATL Support (required by DXC)
 - **Linux**
-  - Ubuntu 20.04 or later
+  - Ubuntu 24.04 or later
   - GCC 9 or later
   - X11, XCB, LCov (optional for code coverage) libraries
   ```console
@@ -71,11 +71,12 @@ git pull
 
 Start Command Prompt, go to `MethaneAsteroids` root directory and either start auxiliary build script
  or build with CMake command line
-to generate Visual Studio 2022 solution:
+to generate Visual Studio 2026 solution (requires CMake 4.2 or later,
+use `-G "Visual Studio 17 2022"` generator with the older CMake versions):
 
 ```console
 set OUTPUT_DIR=Build\Output\VisualStudio\Win64-DX
-cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
+cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 18 2026" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
 cmake --build %OUTPUT_DIR%\Build --config Release --target install
 ```
 
@@ -84,7 +85,7 @@ Vulkan graphics API can be used instead by adding cmake generator option `-DMETH
 Auxiliary build script [Build/Windows/Build.bat](/Build/Windows/Build.bat) can make it more simple for you:
 
 ```console
-./Build/Windows/Build.bat [--vs2019] [--win32] [--debug] [--vulkan] [--graphviz] [--analyze SONAR_TOKEN]
+./Build/Windows/Build.bat [--vs2022] [--win32] [--debug] [--vulkan] [--graphviz] [--analyze SONAR_TOKEN]
 ```
 
 Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in Visual Studio or 
@@ -193,7 +194,8 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
 
 ### CMake Presets
 
-[CMake Presets](/CMakePresets.json) can be used to configure and build project with a set of predefined options (CMake 3.20 is required):
+[CMake Presets](/CMakePresets.json) can be used to configure and build project with a set of predefined options
+(CMake 3.24 is required, `VS2026-*` presets require CMake 4.2):
 ```console
 cmake --preset [ConfigPresetName]
 cmake --build --preset [BuildPresetName] --target install
@@ -201,21 +203,24 @@ cmake --build --preset [BuildPresetName] --target install
 
 Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-presets` and are constructed according to the next schema using compatible kets according to preset matrix:
 ```console
-[ConfigPresetName] = [VS2022|Xcode|Make|Ninja]-[Win64|Win32|Win|Lin|Mac|iOS|tvOS]-[Sim]-[DX|VK|MTL]-[Default|Profile|Scan]
+[ConfigPresetName] = [VS2022|VS2026|Xcode|Make|Ninja]-[Win64|Win32|Win|Lin|Mac|iOS|tvOS]-[Sim]-[DX|VK|MTL]-[Default|Profile|Scan]
 ```
 
-| Presets Matrix | VS2022  | Xcode    | Make      | Ninja    |   
-|----------------|---------|----------|-----------|----------|
-| Win64          | DX / VK | -        | -         | -        |
-| Win32          | DX / VK | -        | -         | -        |
-| Win            | -       | -        | -         | DX / VK  |
-| Lin            | -       | -        | VK        | VK       |
-| Mac            | -       | MTL / VK | -         | MTL / VK |
-| iOS [-Sim]     | -       | MTL      | -         | -        |
-| tvOS [-Sim]    | -       | MTL      | -         | -        |
+| Presets Matrix | VS2026/VS2022 | Xcode    | Make      | Ninja    |   
+|----------------|---------------|----------|-----------|----------|
+| Win64          | DX / VK       | -        | -         | -        |
+| Win32          | DX / VK       | -        | -         | -        |
+| Win            | -             | -        | -         | DX / VK  |
+| Lin            | -             | -        | VK        | VK       |
+| Mac            | -             | MTL / VK | -         | MTL / VK |
+| iOS [-Sim]     | -             | MTL      | -         | -        |
+| tvOS [-Sim]    | -             | MTL      | -         | -        |
 
-Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`. `Ninja` presets should be used from 
-"x64/x86 Native Tools Command Prompt for VS2022" command line environment on Windows or directly from Visual Studio.
+Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to 
+the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. 
+Only compatible configure and build presets can be used together either with the same name, 
+or with `Debug` or `Release` instead of `Default`. `Ninja` presets should be used from 
+"x64/x86 Native Tools Command Prompt for VS2026" command line environment on Windows or directly from Visual Studio.
 
 [GitHub Actions](https://github.com/MethanePowered/MethaneAsteroids/actions) CI builds are configured with these CMake presets.
 CMake presets can be also used in [Visual Studio and VS Code](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/)

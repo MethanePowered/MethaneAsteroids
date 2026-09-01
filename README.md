@@ -1,6 +1,5 @@
 # Methane Asteroids Sample <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Logo/MethaneLogoNameSmall.png" width=200 align="right" valign="middle">
 
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MethanePowered/MethaneAsteroids)
 [![CI Build](https://github.com/MethanePowered/MethaneAsteroids/actions/workflows/ci-build.yml/badge.svg)](https://github.com/MethanePowered/MethaneAsteroids/actions/workflows/ci-build.yml)
 
 Asteroids sample demonstrates multi-threaded rendering of large number of random-generated asteroids 
@@ -13,8 +12,6 @@ Thousands of unique asteroid instances (1000-50000) are drawn with individual dr
 
 Methane Asteroids sample was inspired by [Intel Asteroids D3D12](https://github.com/GameTechDev/asteroids_d3d12),
 but implemented from scratch in a cross-platform style using [Methane Kit](https://github.com/MethanePowered/MethaneKit).
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MethanePowered/MethaneAsteroids)
 
 | <pre><b>Platform  </b></pre>                                                                                                            | <pre><b>Graphics API</b></pre>                                                                                                                                                                                                                                                                            | <pre><b>Screenshot                                            </b></pre> |
 |-----------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|

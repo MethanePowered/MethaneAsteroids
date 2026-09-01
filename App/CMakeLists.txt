@@ -40,7 +40,7 @@ target_link_libraries(${TARGET}
 )
 
 list(APPEND DEPENDENT_TARGETS MethaneAsteroidsSimulation)
-add_prerequisite_binaries(${TARGET} "${DEPENDENT_TARGETS}" "Apps")
+add_prerequisite_binaries(${TARGET} "${DEPENDENT_TARGETS}" "Apps" FALSE)
 
 set_target_properties(${TARGET}
     PROPERTIES

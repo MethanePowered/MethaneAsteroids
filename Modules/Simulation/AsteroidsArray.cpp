@@ -128,7 +128,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     std::uniform_real_distribution<float> noise_gain_distribution(0.2F, 0.8F);
     std::uniform_real_distribution<float> noise_fractal_distribution(0.3F, 0.7F);
     std::uniform_real_distribution<float> noise_lacunarity_distribution(1.5F, 2.5F);
-    std::uniform_real_distribution<float> noise_scale_distribution(0.05F, 0.1F);
+    std::uniform_real_distribution<float> noise_scale_distribution(5.0F, 20.0F);
     std::uniform_real_distribution<float> noise_strength_distribution(0.8F, 1.0F);
 
     texture_array_subresources.resize(settings.textures_count);

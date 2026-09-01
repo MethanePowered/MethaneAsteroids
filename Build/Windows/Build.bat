@@ -1,5 +1,7 @@
 @REM Run 'Build.bat' with optional arguments:
-@REM   --vs2019      - build with Visual Studio 2019 instead of Visual Studio 2022 by default
+@REM   --vs2022      - build with Visual Studio 2022 instead of Visual Studio 2026 by default
+@REM                   (Visual Studio 2026 generator requires CMake 4.2 or later,
+@REM                    with the older CMake versions Visual Studio 2022 is used automatically)
 @REM   --win32       - 32-bit build instead of 64-bit by default
 @REM   --debug       - Debug build instead of Release build by default
 @REM   --vulkan      - use Vulkan graphics API instead of DirectX 12 by default
@@ -14,7 +16,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 
 SET BUILD_VERSION_MAJOR=0
 SET BUILD_VERSION_MINOR=8
-SET BUILD_VERSION_PATCH=1
+SET BUILD_VERSION_PATCH=2
 SET BUILD_VERSION=%BUILD_VERSION_MAJOR%.%BUILD_VERSION_MINOR%.%BUILD_VERSION_PATCH%
 
 SET OUTPUT_DIR=%~dp0..\Output
@@ -24,8 +26,8 @@ SET START_DIR=%cd%
 REM Parse command line options
 :options_loop
 IF NOT "%1"=="" (
-    IF "%1"=="--vs2019" (
-        SET USE_VS2019=1
+    IF "%1"=="--vs2022" (
+        SET USE_VS2022=1
     )
     IF "%1"=="--win32" (
         SET WIN32_BUILD=1
@@ -79,10 +81,21 @@ IF DEFINED DEBUG_BUILD (
     SET BUILD_TYPE=Release
 )
 
-IF DEFINED USE_VS2019 (
-    SET CMAKE_GENERATOR=Visual Studio 16 2019
-) ELSE (
+IF DEFINED USE_VS2022 (
     SET CMAKE_GENERATOR=Visual Studio 17 2022
+) ELSE (
+    REM "Visual Studio 18 2026" generator was introduced in CMake 4.2,
+    REM so fall back to the "Visual Studio 17 2022" generator with the older CMake versions.
+    SET CMAKE_GENERATOR=Visual Studio 18 2026
+    SET CMAKE_VERSION=
+    FOR /F "tokens=3" %%V IN ('cmake --version 2^>NUL ^| FINDSTR /R /C:"cmake version"') DO IF NOT DEFINED CMAKE_VERSION SET CMAKE_VERSION=%%V
+    IF DEFINED CMAKE_VERSION (
+        FOR /F "tokens=1,2 delims=." %%A IN ("!CMAKE_VERSION!") DO (
+            IF %%A LSS 4 SET CMAKE_GENERATOR=Visual Studio 17 2022
+            IF %%A EQU 4 IF %%B LSS 2 SET CMAKE_GENERATOR=Visual Studio 17 2022
+        )
+        IF NOT "!CMAKE_GENERATOR!"=="Visual Studio 18 2026" ECHO CMake !CMAKE_VERSION! does not support Visual Studio 2026 generator, falling back to Visual Studio 2022...
+    )
 )
 
 IF NOT DEFINED TRACY_ENABLED (

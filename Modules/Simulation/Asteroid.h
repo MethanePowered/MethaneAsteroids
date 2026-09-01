@@ -99,6 +99,7 @@ public:
     struct TextureNoiseParameters
     {
         int   random_seed    = 0;
+        int   octave_count   = 4;
         float gain           = 0.5F;
         float fractal_weight = 0.5F;
         float lacunarity     = 2.0F;

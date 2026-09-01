@@ -27,9 +27,9 @@ Random generated asteroid model with mesh and texture ready for rendering
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <PerlinNoise.h>
 #include <FastNoise/FastNoise.h>
 
+#include <algorithm>
 #include <cmath>
 #include <random>
 
@@ -73,25 +73,80 @@ Asteroid::Mesh::Mesh(uint32_t subdivisions_count, bool randomize)
 void Asteroid::Mesh::Randomize(uint32_t random_seed)
 {
     META_FUNCTION_TASK();
-    const float noise_scale = 0.5F;
-    const float radius_scale = 1.8F;
-    const float radius_bias = 0.3F;
+    // Simplex feature scale (reciprocal of frequency) in mesh coordinates: the base mesh is a
+    // sphere of 0.5 radius, so the first octave has about 5 noise features across its diameter.
+    constexpr float noise_feature_scale = 1.0F;
+    constexpr int   noise_octave_count  = 4;
+    constexpr float noise_lacunarity    = 2.F;
+
+    // Normalized noise range applied to the vertex radius: the lower bound keeps the deepest
+    // craters from collapsing the mesh towards its center.
+    constexpr float noise_range_min = 0.5F;
+    constexpr float noise_range_max = 1.0F;
+
+    constexpr float radius_scale = 1.5F;
+    constexpr float radius_bias = 0.3F;
 
     std::mt19937 rng(random_seed); // NOSONAR - using pseudorandom generator is safe here
 
     auto random_persistence = std::normal_distribution<float>(0.95F, 0.04F);
-    const gfx::PerlinNoise perlin_noise(random_persistence(rng), 4, static_cast<int>(random_seed));
+    const float noise_gain = random_persistence(rng);
 
     auto  random_noise = std::uniform_real_distribution<float>(0.0F, 10000.0F);
-    const float noise = random_noise(rng);
+    const float noise_w_offset = random_noise(rng);
+
+    // Fractal Brownian Motion of the Simplex noise:
+    // gain is randomized per mesh, so unlike the texture noise generator the node tree can not be
+    // shared and is created for each mesh; node creation and generation are both thread-safe,
+    // which is required because asteroid meshes are randomized in parallel tasks.
+    auto simplex_noise_ptr = FastNoise::New<FastNoise::Simplex>();
+    simplex_noise_ptr->SetScale(noise_feature_scale);
+
+    auto fbm_noise_ptr = FastNoise::New<FastNoise::FractalFBm>();
+    fbm_noise_ptr->SetSource(simplex_noise_ptr);
+    fbm_noise_ptr->SetOctaveCount(noise_octave_count);
+    fbm_noise_ptr->SetGain(noise_gain);
+    fbm_noise_ptr->SetLacunarity(noise_lacunarity);
+
+    // Batched SIMD-accelerated generation takes vertex coordinates as separate per-axis arrays,
+    // so vertex positions are transposed before generating noise for all vertices at once.
+    const auto vertex_count = static_cast<size_t>(GetVertexCount());
+    std::vector<float> pos_x(vertex_count);
+    std::vector<float> pos_y(vertex_count);
+    std::vector<float> pos_z(vertex_count);
+    const std::vector<float> pos_w(vertex_count, 0.F);
+
+    const Vertices& vertices = GetVertices();
+    for (size_t vertex_index = 0; vertex_index < vertex_count; ++vertex_index)
+    {
+        const Mesh::Position& position = vertices[vertex_index].position;
+        pos_x[vertex_index] = position.GetX();
+        pos_y[vertex_index] = position.GetY();
+        pos_z[vertex_index] = position.GetZ();
+    }
+
+    // The 4-th noise dimension is fixed to a random offset which decorrelates asteroid meshes
+    // generated with the same vertex positions.
+    std::vector<float> noise_values(vertex_count);
+    const FastNoise::OutputMinMax noise_min_max = fbm_noise_ptr->GenPositionArray4D(
+        noise_values.data(), static_cast<int>(vertex_count),
+        pos_x.data(), pos_y.data(), pos_z.data(), pos_w.data(),
+        0.F, 0.F, 0.F, noise_w_offset,
+        static_cast<int>(random_seed));
+
+    // FBM output range depends on the octaves count and gain, so generated values are normalized
+    // to the [noise_range_min, noise_range_max] range with the actually generated range.
+    const float noise_range      = noise_min_max.max - noise_min_max.min;
+    const float noise_multiplier = noise_range > 0.F ? (noise_range_max - noise_range_min) / noise_range : 0.F;
 
     m_depth_range.first = std::numeric_limits<float>::max();
     m_depth_range.second = std::numeric_limits<float>::min();
 
-    for (size_t vertex_index = 0; vertex_index < GetVertexCount(); ++vertex_index)
+    for (size_t vertex_index = 0; vertex_index < vertex_count; ++vertex_index)
     {
         Vertex& vertex = GetMutableVertex(vertex_index);
-        vertex.position *= perlin_noise(Data::RawVector4F(vertex.position * noise_scale, noise)) * radius_scale + radius_bias;
+        const float noise = noise_range_min + (noise_values[vertex_index] - noise_min_max.min) * noise_multiplier;
+        vertex.position *= noise * radius_scale + radius_bias;
 
         const float vertex_depth = vertex.position.GetLength();
         m_depth_range.first = std::min(m_depth_range.first, vertex_depth);
@@ -240,33 +295,60 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
                                         const TextureNoiseParameters& noise_parameters)
 {
     META_FUNCTION_TASK();
-    static const auto fractal_noise = [noise_parameters]() {
-        auto noise = FastNoise::New<FastNoise::FractalFBm>();
-        noise->SetSource(FastNoise::New<FastNoise::Simplex>());
-        noise->SetGain(noise_parameters.gain);
-        noise->SetWeightedStrength(noise_parameters.fractal_weight);
-        noise->SetOctaveCount(4);
-        noise->SetLacunarity(noise_parameters.lacunarity);
-        return noise;
-    }();
+    META_CHECK_NOT_ZERO(dimensions.GetWidth());
+    META_CHECK_NOT_ZERO(dimensions.GetHeight());
+    META_CHECK_GREATER_OR_EQUAL(row_stride, dimensions.GetWidth() * 3U);
+    META_CHECK_GREATER_OR_EQUAL(texture_data.size(), static_cast<size_t>(row_stride) * dimensions.GetHeight());
 
-    std::vector<float> noise_values(dimensions.GetPixelsCount());
+    // Fractal Brownian Motion of the Perlin (Simplex) noise:
+    // fractal parameters are randomized per texture, so the node tree can not be shared and is created
+    // for each texture; node creation and generation are both thread-safe, which is required because
+    // asteroid textures are generated in parallel tasks.
+    auto simplex_noise_ptr = FastNoise::New<FastNoise::Simplex>();
+    simplex_noise_ptr->SetScale(1.F); // noise feature size in generation coordinates
+    simplex_noise_ptr->SetOutputMin(0.F);
+    simplex_noise_ptr->SetOutputMax(1.F);
 
-    for (size_t row = 0; row < dimensions.GetHeight(); ++row)
+    auto fbm_noise_ptr = FastNoise::New<FastNoise::FractalFBm>();
+    fbm_noise_ptr->SetSource(simplex_noise_ptr);
+    fbm_noise_ptr->SetOctaveCount(noise_parameters.octave_count);
+    fbm_noise_ptr->SetGain(noise_parameters.gain);
+    fbm_noise_ptr->SetLacunarity(noise_parameters.lacunarity);
+    fbm_noise_ptr->SetWeightedStrength(noise_parameters.fractal_weight);
+
+    const uint32_t width  = dimensions.GetWidth();
+    const uint32_t height = dimensions.GetHeight();
+
+    // Generate noise for all texels at once with a batched SIMD-accelerated call;
+    // step sizes keep the number of base octave features independent of the texture resolution.
+    std::vector<float> noise_values(static_cast<size_t>(width) * height);
+    const FastNoise::OutputMinMax noise_min_max = fbm_noise_ptr->GenUniformGrid2D(
+        noise_values.data(), 0.F, 0.F,
+        static_cast<int>(width), static_cast<int>(height),
+        1.f / noise_parameters.scale,
+        1.f / noise_parameters.scale,
+        noise_parameters.random_seed);
+
+    // FBM output range depends on the octaves count and gain,
+    // so generated values are normalized to the [0, 255] color channel range with the actually generated range.
+    const float noise_range      = noise_min_max.max - noise_min_max.min;
+    const float noise_multiplier = noise_range > 0.F ? 255.F / noise_range : 0.F;
+    const uint32_t pixel_stride  = row_stride / width;
+
+    for (uint32_t row = 0; row < height; ++row)
     {
-        auto row_data = reinterpret_cast<uint32_t*>(texture_data.data() + row * row_stride); // NOSONAR
-        
-        for (size_t col = 0; col < dimensions.GetWidth(); ++col)
-        {
-            const float noise_intensity = fractal_noise->GenSingle2D(noise_parameters.scale * static_cast<float>(row),
-                                                                     noise_parameters.scale * static_cast<float>(col),
-                                                                     noise_parameters.random_seed);
+        std::byte*   row_data       = texture_data.data() + static_cast<size_t>(row) * row_stride;
+        const float* row_noise_data = noise_values.data() + static_cast<size_t>(row) * width;
 
-            auto texel_data = reinterpret_cast<std::byte*>(&row_data[col]); // NOSONAR
-            for (size_t channel = 0; channel < 3; ++channel)
-            {
-                texel_data[channel] = static_cast<std::byte>(255.F * noise_intensity);
-            }
+        for (uint32_t col = 0; col < width; ++col)
+        {
+            const float noise_intensity = (row_noise_data[col] - noise_min_max.min) * noise_multiplier;
+            const auto  channel_value   = static_cast<std::byte>(static_cast<uint8_t>(std::min(255.F, noise_intensity)));
+
+            std::byte* texel_data = row_data + static_cast<size_t>(col) * pixel_stride;
+            texel_data[0] = channel_value; // Red
+            texel_data[1] = channel_value; // Green
+            texel_data[2] = channel_value; // Blue
         }
     }
 }
